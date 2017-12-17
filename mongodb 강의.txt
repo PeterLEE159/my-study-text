@@ -1,0 +1,166 @@
+mongodb 구성
+	database
+		-> collection
+			-> document
+	
+mongodb와 관계형 데이터베이스
+	   mongodb		관계형데이터베이스
+	ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+	   database 	database
+	   collection 	table
+	   document		record(row)
+	ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+
+mongodb shell
+	show dbs			현재 사용중인 모든 데이터베이스를 출력
+	use <데이터베이스이름>	지정된 데이터베이스를 사용한다
+						지정된 데이터베이스가 존재하지 않으면 자동으로 새로 생성한다
+	show collections	현재 데이터베이스의 모든 collection을 출력 (collection은 타 dbms의 table과 유사한 개념)
+
+mongodb의 구조 bson (binary JSON)
+
+insert
+	db.<컬렉션명>.insertOne(객체);
+	db.<컬렉션명>.insertMany(배열);
+	
+query
+	db.<컬렉션명>.count();
+		select count(*) from <컬렉션명>
+		
+	db.<컬렉션명>.find({});
+		select * from <컬렉션명>
+		
+	db.<컬렉션명>.find({key1: 'value1'});
+		select * from <컬렉션명> where key1 = 'value1'
+	
+	** $in 은 value를 property로 가지는 배열을 받는다
+	db.<컬렉션명>.find({
+		key: {
+			$in: [value1, value1]
+		}});
+		select * from <컬렉션명> where key in (value1, value2)
+	
+	db.<컬렉션명>.find({key: {$gt: value}});
+		select * from <컬렉션명> where key > value
+	
+	** $gt, $lt를 적용하기 위해서는 객체로 적용해야 한다
+	db.<컬렉션명>.find({
+		key1: value1, 
+		key2: {$gt: value2}});
+		select * from <컬렉션명> where key1 = value1 and key2 > value2
+	
+	** $or는 객체를 property로 가지는 배열을 받는다	
+	db.<컬렉션명>.find({
+		$or: [
+			{key1: value1}, 
+			{key2: value2}
+		]});
+		select * from <컬렉션명> where key1 = value1 or key2 = value2
+		
+	** $or는 객체를 property로 가지는 배열을 받는다
+	db.<컬렉션명>.find({
+		key1: value1, 
+		$or: [
+			{key2: value2}, 
+			{key3: {$gt: value3}
+		]});
+		select * from <컬렉션명> where key1 = value1 and (key2 = value2 or key3 = value3);
+	
+	** $exists을 사용하기 위해서는 객체로 적용되어야 한다 ($gt, $lt 처럼 ... )
+	db.<컬렉션명>.find({
+			key1: {$exists: ture}
+		});
+		-> 대응되는 일반적인 관계형 데이터베이스 쿼리는 없다
+			이 값의 의미는 몽고db 특유의 document에서 각 값은 다른 칼럼을 가질 수 있어서 적용되는 개념이다.
+			$exists 는 칼럼 key1이 있는 document만 fetch하는 명령어이다.
+		
+update
+	db.<컬렉션명>.updateMany({key1: value1}, {$set: {key2: value2}});
+		update <컬렉션명> set key2 = value2 where key1 = value1
+
+delete
+	db.<컬렉션명>.deleteMany({});
+		delete from <컬렉션명>
+	
+	db.<컬렉션명>.deleteMany({key1: value1});
+		delete from <컬렉션명> where key1 = value1;
+		
+mongodb 설정
+	npm install mongodb mongoose --save
+	
+	js 파일
+		// mongodb require
+		var mongoClient = require('mongodb').MongoClient;
+		
+		// 접속할 mongodb database
+		var url = 'mongodb://localhost:27017/hta';
+		mongoclient.connect(url, function(err, db) {
+			var user = { ... };
+			db.collection('user').insertOne(user);
+		});
+mongoose
+	- mongoDB ODM(Object Document Mapping)모듈이다
+	  자바스크립트 객체와 mongodb의 Document를 매핑시킨 후, 자바스크립트 객체에 대한 조작을 수행함으로
+	  mongodb에 대한 CRUD 작업을 수행한다
+	  
+	  var user = new User();
+	  user.name = '홍길동';
+	  user.email = 'hong@gmail.com';
+	  user.age = 30;
+	  user.save();
+	  
+mean 스택 프로젝트 구조
+	public		정적인 파일 (css, js , image 파일등이 들어간다)
+	model 		VO 파일
+	router 		uri 요청과 실행 함수를 매핑시키는 파일이 들어간다
+	views 		뷰 파일 (html) 이 들어간다
+	
+mongoose CRUD
+	Create
+		var user = new UserModel();
+		user.id = 'hong';
+		user.name = '홍길동';
+		user.save(function(err) { 저장 이후에 수행할 작업 .. ( 후처리.. ) } );
+	Read (Retrieve)
+		ProductModel.find({type: '가구', maker: '한샘'}, function(err, results) { ... });
+			select * from tb_products where type = '쇼파' and maker = '한샘'
+			
+		ProductModel.find({type: '가구', price: {$gt: 100000}, function(err, results) { ... });
+			select * from tb_products where type = '가구' and price > 100000;
+			
+		ProductModel.find({type: '쇼파', price: {$gt: 100000, $lt: 300000}, function(err, results) { ... });
+			select * from tb_products where type = '가구' and price > 100000 and price < 300000;
+			
+		ProductModel.find({type: '쇼파', maker: {$in: ['한샘', '이케아']}}, function(err, results) { ... });
+			select * from tb_products where type = '쇼파' and maker in ('한샘', '이케아');
+		
+		ProductModel.find({type: '쇼파', maker: '한샘'}, 'id name price' function(err, results) { ... });
+			select id, name, price from tb_products where type = '쇼파' and maker = '한샘';
+			
+		type은 쇼파, maker는 한샘, price는 100만원에서 500만원
+			ProductModel.find({type: '쇼파', maker: '한샘', price: {$lt: 100만원, $gt: 500만원}});
+				select * from tb_products where type = '쇼파' and maker = '한샘' and price > 100만원 and price < 500만원
+		
+			ProductModel
+				.find({type: '쇼파'})
+				.where('sale').equals(true)
+				.where('price').gt(1000000).lt(5000000)
+				.where('maker').in(['한샘', '이케아'])
+				.limit(10)
+				.sort('-price')
+				.exec(function(err, result) { ... })
+	Update
+		UserModel.findOne({id: 'hong'}), function(err, user) {
+			user.name = '홍길순';		// 값 변경
+			user.save(function(err) {
+				... 후처리
+			});
+		});
+	Delete
+		UserModel.findOne({id: 'hong'}), function(err, user) {
+			user.remove(function(err) {
+				... 후처리
+			});
+		});
+	

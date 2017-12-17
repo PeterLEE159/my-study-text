@@ -1,0 +1,82 @@
+Angular JS
+	자바스크립트 mvc 프레임워크
+	html 태그에 대양한 속성을 추가해 html의 기능을 확장시킨다
+		<html mg-app="myapp">
+			<div ng-if="">
+			</div>
+		</html>
+	
+	양방향 데이터바인딩을 지원한다
+		model -> 뷰, 뷰 -> model
+	
+	다양한 기능을 가지는 directive(지시어)를 제공한다
+		ng-app, ng-model, ng-if, ng-bind, ng-controller, ng-repeat, ...
+		
+	다양한 filter(모델의 값을 포맷한다)를 제공한다
+		currency, date, limitTo, number, orderBy, lowercase, uppercase, ...
+	
+	다양한 service를 제공한다
+		$http, $scope, $location, ...
+		
+	AngularJS의 주요 컴포넌트
+		Directive		html태그에 새로운 기능을 추가한다
+		Service			controller에서 사용되는 공통기능을 구현한다
+		Filter 			모델의 값을 포맷팅한다
+		Controller 		사용자와의 상호작용과 관련된 기능을 구현한다(이벤트 발생 시 실행되는 코드 구현)
+		Scope 			뷰에 표시할 데이터가 보관된다
+
+	모듈
+	angularJS의 다른 구성요소를 담는 그릇이다
+	다른 모듈을 주입받을 수 있다 (DI를 지원)
+
+	컨트롤러
+		뷰에 표시할 데이터를 관리한다
+		뷰의 처리와 관련된 기능을 제공한다
+	서비스
+		컨트롤러에서 공통으로 사용되는 기능을 제공
+		angularJS는 내장서비스를 제공한다
+		angularJS의 내장서비스는 $http, $location, $q 처럼 $로 시작한다
+		사용자정의 서비스를 모듈에 등록할 수 있다
+		서비스는 주로 AJAX를 사용한 서버와의 데이터교환 작업을 수행한다
+		
+	모듈은 만드는 방식
+		1. angular.module('모듈명, []);
+			지정된 모듈명으로 새로운 모듈 객체를 생성한다
+		2. angular.module('모듈명');
+			지정된 모듈명의 모듈객체를 검색한다
+	
+	모듈
+	컨트롤러
+	서비스
+	필터
+		데이터 출력형태를 바꾼다
+		원본데이터를 변형하지는 않는다
+		내장필터가 있다
+		data, limitTo, number, lowercase, uppercase, orderBy, filter
+		사용자정의 필터를 작성할 수 있다
+		
+	디렉티브
+		angularJS에서 html 태그에 특별한 기능을 부여하는 것
+		angularJS는 다양한 디렉티브를 제공한다
+		내장 디렉티브
+			ng-app
+			ng-controller
+			ng-repeat
+			ng-model
+			
+			ng-if
+			ng-switch
+			ng-show
+			ng-hide
+			ng-class
+			ng-valid
+			ng-invalid
+			
+			** 각종 디렉티브가 구성되는 방법
+			directive('ngApp', function() { ... } );
+			directive('ngController', function() { ... } );
+			directive('ngRepeat', function() { ... } );
+			
+		angularjs html compiler는 html에 표시된 내장 디렉티브 혹은 사용자정의 디렉티브를
+		찾아 그 디렉티브와 관련된 특별한 함수를 실행
+		

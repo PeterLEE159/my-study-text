@@ -1,0 +1,260 @@
+MEAN 스택
+	M 		Mongo DB
+	E 		Expresss JS (node js를 위한 오픈소스)
+	A 		Angular JS
+	N 		Node JS
+
+nodejs
+	- PC에 javascript 실행환경을 제공하는 플랫폼
+	- windows, linux, macos 등 여러 운영체제에서 사용 가능하다
+	- 서버측 자바스크립트 언어로써 가능성을 보여준다
+
+	- 특징
+		플랫폼 독립적
+		V8 자바스크립트 엔진사용 - 실행속도가 빠르다
+		웹서버를 빠르게 구축할 수 있다
+		nodejs 생태계가 잘 구축되어 있다
+
+nodejs 모듈
+	- 유용한 기능이 포함된 재사용 가능한 자바스크립트 라이브러리
+	- 내장모듈, 서드파티모듈, 사용자정의모듈로 나뉨
+	- 내장모듈의 종류
+		http, fs, path, net, url, os
+	
+	- 서드파티 모듈
+		별도의 설치과정이 필요한 모듈이다
+		package.json파일에 설치할 서드파티모듈이 정의되면 프로젝트 디렉토리 내에 설치된다
+	
+	- 사용자정의 모듈
+		exports 및 module.exports를 활용해 사용자가 구현한 내용을 재사용가능한 모듈로 만들 수 있다
+		
+package.json
+	- nodejs에서 프로젝트와 관련된 정보를 담고 있는 파일이다 (메이븐의 pom.xml과 유사)
+	- 프로젝트 이름, 버전, 작성자 등의 메타정보를 포함하고 있다
+	- 패키지(모듈)의 의존성 정보를 포함한다
+	- nodejs 프로젝트의 루트 디렉토리에 package.json 파일이 위치한다
+	- npm init 명령어를 실행하면 몇 가지 질문을 물어보는 화면이 나오고 package.json 파일이 생성된다
+	
+npm(nodejs package manager)
+	- nodejs의 패키지 관리도구
+	- 패키지(모듈)를 설치하고 관리한다
+	- 설치한 모듈은 package.json 파일에 정의하면 npm을 사용해 설치할 수 있다npm
+	- 사용법
+		npn init 					package.json을 해당 디렉토리에 설치에 프로젝트에 대한 정보와 사용된 서드파티 
+									package정보를 유기적으로 받을 수 있게 한다
+		npm install 모듈명				해당 프로젝트의 node_module폴더에 모듈이 설치된다
+		npm install -g 모듈명			모듈을 전역으로 설치한다
+		npm install 모듈명 --save		모듈을 설치하고 모듈의 의존성정보를 package.json에 기록한다
+		npm uninstall 모듈명 			모듈을 삭제한다
+		
+비동기처리
+	- IO 작업, 네트워크 작업, DB Access 작업등은 처리시간이 많이 소요되는 작업이다
+	- 이런 작업은 비동기 처리 대상 작업이 된다
+	- 작업이 완료되었을 때 (성송 혹은 실패) 실행할 코드를 제공해주는 비동기 처리방식을 활용한다
+	
+	fs.readFile('bigFile.txt', function(err, data) {	--- 1
+		// 큰 파일을 처리하는 코드								--- 2
+	});
+	console.log('파일읽기와 상관없는 코드');						--- 3
+	실행순서 		1 -> 3 -> 2 (파일 읽기 처리가 시간이 많이 소요되므로 .. )
+	
+	
+	// 동기처리 메소드
+	fs.readFileSync('bigfile.txt');		--- 1
+	// data를 처리하는 코드					--- 2
+	console.log('파일읽기와 상관없는 코드');		--- 3
+	실행순서 		1 -> 2 -> 3
+	
+
+node의 주요특징
+	connector
+		미들웨어를 지원하는 모듈로써 사용자 요청이나 응답에 공통적인 정보를 기입하는 방식으로 가공해 웹개발을 용이하게 한다
+	express
+		- 웹 어플리케이션을 개발하기 위해서 쉽게 사용가능한 미들웨어를 지원하고 UrlRouting을 지원한다
+		- jsp처럼 뷰를 컴파일해 html형식으로 내려주는 뷰 랜더링 기능도 지원한다.
+		- nodejs를 사용해 웹 애플리케이션을 만드는데 필요한 기능들을 제공하는 nodejs용 웹 애플리케이션 프레임워크다
+		- nodejs의 connect 모듈과 많은 연관성을 가지고 있다
+		- 제공하는 기능
+			미들웨어를 지원한다
+				미들웨어 함수를 위한 미들웨어 스택을 갖고 있다
+			라우팅을 지원한다
+				요청 url과 요청처리 메소드를 바인딩한다
+			뷰 랜더링을 지원한다
+				다양한 뷰 엔진을 사용해 동적으로 HTML을 랜더일 할 수 있다
+			다양한 확장기능을 지원한다
+				요청/응답객체에 개발자의 편의를 위한 다양한 속성/기능을 추가해 확장시킨다
+				
+	미들웨어
+		- 요청처리함수를 더 작은 조각으로 나누어 이 함수들이 한번에 하나씩 처리하도록 하는 작업이다
+		- 미들웨어 함수는 미들웨어 스택에 추가할 수 있다
+		- 미들웨어 함수는 보통 3개의 매개변수를 가진다
+			- 정상 미들웨어 함수 **  express.use(function(req, res, next){ ... })
+				- 애플리케이션이 정상모드일 때 실행되는 미들웨어 함수
+				- 미들웨어 함수가 req, res, next인자를 가진다
+					* next는 생략 가능하다
+			- 에러 미들웨어 함수
+				- 애플리케이션이 에러모드일 때 실행되는 미들웨어 함수
+				- 미들웨어 함수가 err, req, res, next 인자를 가진다
+					* 인자를 임의로 생략할 수 없다
+				- 에러모드로 진입하는 방법은 next(에러객체)를 실행한다
+				- 에러 미들웨어 함수는 미들웨어 스택의 맨 끝에 둔다
+	
+	__dirname
+		nodejs의 전역변수로써 현재 실행되는 js파일의 위치한 전체경로가 담긴다
+	
+	exports['serve-static'] = function(fullpath) {
+		
+		return function(req, res, next) {
+			var filename= req.url;
+			fs.readFile(fullpath + filename, function(err, data) {
+				res.end(data);
+			});
+		};
+	};
+	var app = require('express'),
+		serveStatic = require('serve-static'),
+		path = require('path');
+	
+	// use는 미들웨어 등록함수인데, serveStatic(fullpath) 함수의 리턴결과가 미들웨어 함수이므로
+	// [function(req, res, next)], app.use(serveStatic(fullpath)); 등록이 가능하다
+	app.use(serveStatic(path.join(__dirname, 'public')));
+	
+	
+	
+	routing을 이용한 웹 페이지 구성
+	main
+		app.js 					// 프로젝트의 main프로그램, 각종 미들웨어 함수, 에러 핸들링을 포함한다
+								// 라우터에서 정의한 url라우팅 정보를 포함한다
+		db.js  					// mongoose객체, mongoose 연결정보가 정의되어 있는 개발자 지정 모듈이다
+		package.json 			// 프로젝트 메타정보, 의존성정보 등이 정의되어 있다
+		routers					// 요청 url과 매핑되는 미들웨어함수들이 정의되어 있다 spring mvc의 Controller와 유사
+			user.js
+			todo.js
+		views 					// 뷰 템플릿 (ejs용 템플릿) 이 정의되어 있다
+			home.ejs
+			user
+				login.ejs
+				register.ejs
+			todo
+				home.ejs
+				register.ejs
+		models					// mongoose용 모델(mongodb에 저장되는 document를 표현한 것)들이 정의되어 있다
+			usermodel.js
+			todomodel.js
+		public 					// 정적 컨텐츠(html, css, image)가 정의되어 있다
+		
+		
+				
+	app.js
+		1. 필요 3자모듈을 require
+			var express = require('express'),
+			path = require('path');
+		
+		2. view 환경설정
+			var app = express();
+			// 뷰의 위치를 express rendering을 위해 설정
+			app.set('views', path.join(__dirname, 'views'));
+			// 사용할 view engine을 설정
+			app.set('view engine', 'ejs');
+			
+		3. router js 설정
+			var express = require('express'),
+			router = express.Router();
+			
+			router.get('/home.do', function(req, res) {
+				// rendering 될 ejs 파일위치를 가리킨다
+				res.render('user/home');
+			});
+			
+			module.exports = router;
+		
+		4. app.js에서 routing 파일을 설정
+			// use함수에서 첫 번째 파라미터는 router가 적용될 공통 uri 머릿부분이고 두 번째 파라미터값은 개발자가 만든 라우팅 모듈이다.
+			app.use('/user', require('./router/user');
+	
+	세션관리
+		세션생성 (로그인)
+			router.post('/login.do', function(req, res, next) {
+				var id = req.body.userid;
+				var pwd = req.body.userpwd;
+				
+				UserModel.find({userid: id}, function(err, users) {
+					if(users.length == 0)
+						return next(new Error('아이디 혹은 비밀번호가 일치하지 않습니다'));
+					
+					var user = users[0];
+					if(user.pwd != pwd)
+						return next(new Error('아이디 혹은 비밀번호가 일치하지 않습니다'));
+						
+					req.session['LOGIN_USER'] = user;
+					
+					res.redirect('/home.do');
+				});	
+			});
+		
+		세션인증 (미들웨어를 통한 로그인 여부 체크)
+			app.use(function(req, res, next) {
+				if(req.session['LOGIN_USER'])
+					res.locals['logined'] = true;
+				else
+					res.locals['logined'] = false;
+				// res.locals['logined']는 ejs파일에서 <% logined %> 로 접근이 가능해 view 구성에 도움을 준다
+				next();
+			});
+		
+		세션파괴 (로그아웃)
+			router.post('/logout.do', function(req, res) {
+				req.session.destroy(function(err) {
+					res.redirect('/home.do');
+				});
+			});
+			etc js
+		todo web application의 모듈
+			express
+				nodejs용 웹애플리케이션 프레임워크
+				미들웨어스택을 제공한다(다양한 미들웨어 함수를 적재할 수 있다), app.use(function(err, req, res, next) { .. })
+				url 라우팅을 지원한다(특정 요청url과 미들웨어함수를 매핑), app.get(url, function(req, res) { .. });
+				뷰템플릿 엔진을 이용한 뷰랜더링을 지원, app.post(url, function(req, res) { res.render('home' } );
+				요청객체와 응답객체에게 속성과 기능을 추가한다
+			ejs
+				뷰템플릿 엔진이다
+				뷰템플릿 페이지에 모델의 데이터를 표현해 동적으로 html컨텐츠를 만든다
+				jsp의 문법과 유사한 문법요소로 뷰템플릿에 javascript 코드를 포함시킬 수 있다
+			body-parser
+				폼 입력값을 파싱해 req.bodt객체에 저장한다
+				req.body = {name: '홍길동', ... }
+				querystring은 req.query객체에 저장한다
+				ex) ?opt=title&keyword=이벤트 		-> req.query = {opt: 'title', keyword: '이벤트'}
+			express-session
+				사용자 별 세션을 관리한다
+				세션객체를 생성한다
+				세션객체를 식별하기 위한 쿠키정보를 클라이언트로 보낸다
+				쿠키정보에 해당하는 세션객체를 검색한다
+				생성된 세션 혹은 검색된 세션객체를 req.session에 저장한다
+			mongoose
+				ODM library
+				자바스크립트 객체로 mongodb의 컬렉션에 해당하는 문서를 모델한다
+				모델은 mongodb에 대한 CRUD 기능을 제공한다 (모델에 대한 조작이 mongodb의 컬렉션에 직접적인 영향을 미친다)
+		
+		todo web application의 flow
+			1. 서드파티 모듈 import
+			2. express객체 생성
+			3. 뷰 템플릿 엔진 설정
+			4. 폼 입력값 파싱
+			5. 세션관리
+			6. 로그인 여부체크
+			7. 요청처리 미들웨어 함수실행
+			8. 에러 핸들링
+			
+		$scope와 $http
+			$scope
+				컨트롤러를 정의할 때 $scope를 매개변수로 선언하면 angularjs가 스코프객체를 제공한다
+				뷰 템플릿과 컨트롤러를 연결하는 다리역할을 수행한다
+				$scope에 저장된 값을 뷰템플릿에 표시할 수 있다
+				뷰 템플릿에서 입력된 값을 $scope에 저장된다
+				$scope에 정의된 함수는 뷰를 사용하는 사용자와 상호작용한다
+				$scope에는 속성과 함수를 정의할 수 있다
+			
+			$http	
+				$http는 서버와 HTTP통신을 수행하는 angularJS 서비스 객체
+				get(), post(), put(), delete()등의 메소드를 가진다

@@ -1,0 +1,211 @@
+1. FormModule
+	app.module.ts
+		import { FormModule } from '@angular/core';
+		
+		@NgModule({
+			imports: [
+				BrowserModule,
+				FormsModule
+			],
+		});
+		
+	component 갱신 중에, 데이터를 복사해 3자에 저장하는 용도 (Two way binding, Data Binding)
+	
+2. Component & Databinding
+	Component
+		페이지의 부분을 담당한다
+		front의 mvc에서 model을 담당한다
+	
+	Input binding
+		property binding을 이용해 parent component에서 child component로 데이터를 전달할 때 사용
+		ex)
+			parent.ts
+				data = 'transferData';
+			
+			parent.html
+				<app-child [customPropertyName]="data" />
+			
+			child.ts
+				import { Input } from '@angular/core';
+				
+				@Input() customPropertyName: string;
+	
+	Output binding
+		event binding을 이용해 child component 에서 parent component로 핸들러를 이용해 전달
+			
+			ex)
+				parent.ts
+					onParentFunction(transferData: {name: string, id: number}) {
+					 
+					}
+				
+				parent.html
+					<app-child [actChildEventName]="onParentFunction($event)" />
+				
+			
+				child.ts
+					import { EventEmitter, Output } from '@angular/core';
+					name = 'newName';
+					id: 5;
+					@Output actChildEventName: EventEmitter<{name: string, id: number}>();
+					
+					onClickButton() {
+						actChildEventName.emit( { name: this.name, id: this.id } );
+					}
+					
+				child.html
+					<button (click)="onClickButton()" >클릭</button>
+					
+	Local Data References
+		# 을 이용해 표현, 선언된 특정 template html 파일내에서만 적용이 가능하다
+		이 방법을 활용하면 input에 two-way binding을 사용하지 않고도 submit을 할 때 local data를 event binding을 통해 ts파일로 전송할 수 있다
+		ex)
+			example.html
+				<input type="test" #inputId />
+				<input type="password" #inputPassword" />
+				<button (click)="onSubmit(inputId, inputPassword)" />
+				
+			example.ts
+				function onSubmit(inputId: HTMLInputElement, inputPassword: HTMLInputElement) {
+					var id = inputId.value;
+					var password = inputPassword.value;
+					// 유효성 체크..
+				}
+	
+	ViewChild 데코레이터를 이용한 local references 접근
+		ViewChild 데코레이터를 이용해 local data에 접근하는 방법
+		ex)
+			example.ts
+				@ViewChild('inputName') nameRef: ElementRef;
+				function check() {
+					name = this.nameRef.nativeElement.value;
+				}
+				
+			example.html
+				<input type="test" #inputName (keyup)="check()"/>
+	
+	
+	ContentChild를 이용해 ng-content local references 조정하기
+		ContentChild 데코레이션을 이용해 ng-content 태그에 들어갈 동적인 태그의 local references를 읽어 올 수 있다
+		ex)
+			parent.html
+				<app-child>
+					<input type="text" #inputName />
+				</app-child>
+		
+			child.ts
+				import { ContentChild } from '@angular/core';
+				
+				@ContentChild() inputName: ElementRef;
+		
+		** ContentChild 데코레이션을 통해 읽어오는 것은 ng-content를 통해 읽어오니까 component life cycle의 ngContentInit 함수 이후에
+			inputName.nativeElement.value 를 통해 읽어올 수 있다.
+			
+			
+				
+	
+	<ng-content></ng-content> 태그를 이용한 동적인 컴포넌트 중간 태그코드 삽입
+		ng-content 태그를 사용해 동적으로 component tag사이에 tags를 삽입할 수 있다
+		
+		ex)
+			parent.html
+				<app-child>
+					<p> ng-content 태그 안에 들어갈 내용들 </p>
+				</app-child>
+			
+			child.html
+				<p>child template 시작 부분 </p>
+				<ng-content></ng-content>
+				
+		** 장점
+			child 컴포넌트를 호출하는 다양한 component들에서 동적으로 태그를 삽입 할 수 있다
+		** 단점
+			코드의 가독성이 떨어지고 다소 코드가 복잡해진다
+	
+3. Directives
+	목적
+		angular에게 작업을 지시하는 용도
+	
+	종류
+		[]		property binding
+		()		event binding
+		[()]	two-way binding
+		*		structural binding
+		# 		local binding
+		Component 지시어
+		Attribute 지시어
+		DOM 지시어
+		
+ 
+		[ngStyle]="backgroundColor: component_var"
+			css를 ts 변수를 통해 설정
+		[ngClass]="{class_name: boolean}"
+			동적으로 attribute에 class_name을 class에 붙이는 property binding
+			
+			[attr_name]="boolean"
+			[attr_name]="string"
+			[attr_name]="{attr_value: boolean}"
+			
+	
+4. Services & Dependancy Injection
+5. Routing
+	URL만 바뀌면서 유저 입장에서는 페이지가 바뀌는 것처럼 보이지만 실제론 SPA
+6. Observables
+	asynchronized 비동기적인 코드 환경
+7. Forms
+	handling forms, dynamic한 forms 를 관리
+8. pipe
+	데이터 포맷
+9. http
+	http 통신
+10. Authentication
+	인증 (서버부분 아닌감 ??? )
+11. Optimization & NgModule
+	최적화 
+12. Deployment
+	서버 배포
+13. Animation & Testing
+	동적이고 attractive 한 페이지..
+	
+	**기타
+		부트스트랩
+		1. cli
+			npm install --save bootstrap
+				(package.json 에 boostrap 저장)
+		2.  ./.angular-cli.json에 style 부분 적용
+			styles: [
+				'../node_modules/bootstrap/dist/bootstrap.min.css',
+				'styles.css'
+			]
+			** json 파일 ./.angular-cli.json는 root폴더에 위치하지만
+				style은 SPA인 ./src/index.html에서 상대적으로 바라보는
+				위치이므로 root의 node_modules/bootstrap으로 이동하기 위해서
+				../ 을 통해 한 단계 위로 이동한다
+				
+14. Module
+		앱의 기능적인 부분 bundle 제공
+		
+15. component lifecycle
+	- ngOnChanges
+		@Input 태그가 붙은 property가 변경될 때 호출
+	
+	- ngOnInit
+		component 초기화 후 발생
+	
+	- ngDoCheck
+		component의 모든 이벤트바인딩이 발동될 때 (click), (keyup), (customEvent) 실행
+	
+	- ngAfterContentInit
+		ng-content를 통해 component를 초기화 할 때 호출
+	
+	- ngAfterContentChecked
+		ng-content 에 변화가 생길 때 마다 호출
+		
+	- ngAfterViewInit
+		component의 전체적인 (child 까지 포함) 뷰가 초기화 된 후에 실행
+		
+	- ngAfterViewChecked
+		component의 전체적인 (child 까지 포함) 뷰가 변경 시 실행
+	
+	- ngOnDestroy
+		component가 필요가 없어서 (remove 될때 .. ) 파괴되기 직전에 실행 (close작업에 유용 .. )

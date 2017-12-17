@@ -1,0 +1,4 @@
+clutter[Klater]
+	v. (부정적인 의미로) 우겨넣다
+		ex) Don't clutter the page with too many diagrams
+	

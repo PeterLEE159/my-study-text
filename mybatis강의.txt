@@ -1,0 +1,74 @@
+mybatis
+		
+	- SQL Mapper framework
+	- 과정
+			객체		SQL 실행에 필요한 값을 담는 객체
+			=> SQL
+			=> 객체		SQL 실행 후 결과값을 담는 객체
+	
+	- 주요 구성요소
+		Mapper xml file			- ibatis와 동일 (쿼리문을 정의하는 mapper xml파일)
+		Mapper config file		- mybatis의 환경설정 파일
+		SqlSessionFactory		- SqlSession을 제공하는 객체
+		SqlSession				- mybatis의 핵심객체, ibatis의 SqlMapClient와 유사 (CRUD 기능 제공)
+								  insert(), delete(), update(), selectOne(), selectList(), commit(), rollback()
+		Mapper 인터페이스		- DB Access 작업이 선언된 인터페이스
+		apper 인스턴스			- Mapper 인터페이스의 구현객체 (Mapper인터페이스와 Mapper xml 파일을 참조로 해서 spring mybatis는 자동으로 생성한다)
+		
+
+ibatis
+	mapper파일 --등록--> config파일 --로드--> SqlMapClientBuilder --생성--> SqlMapClient ==> DB Access 작업
+
+ibatis-spring
+	mapper파일 --등록--> config파일 --로드--> SqlMapClientFactoryBean --생성--> SqlMapClient --DI--> SqlMapClientTemplate --DI--> xxxDAO ==> DB Access 작업
+	
+mybatis
+	mapper파일 --등록--> config파일 --로드--> SqlSessionFactoryBuilder --생성--> SqlSessionFactory --제공--> SqlSession ==> DB Access 작업
+	
+mybatis mapper 파일
+	<mapper namespace="com.sample.demo1.dao.MemberDao">
+		<select id="" parameterType="" resultType="">
+			select *
+			from members
+			where name = #{username}
+			and location = #{loc}
+		</select>
+	</mapper>
+	
+
+mybatis oracle 연동하기
+	1. 의존성 설정
+		spring version			3.2.18.RELEASE
+		junit					4.12
+		mybatis core lib
+		mybatis spring intg lib
+		spring jdbc
+		oracle ojdbc
+		
+	2. mybatis 설정파일
+		todo mapper xml file
+		mybatis configuration file
+
+	3. interface, class 정의
+		interface	-> TodoMapper,	TodoService
+		class		-> Todo, 		TodoServiceImpl, 	App
+		
+		기능
+			모든 Todo 조회, 새로운 Todo 추가, 지정된 번호의 Todo 삭제
+			
+	4. spring bean configuration
+		app-context.xml
+			- DataSource 빈 등록
+			- SqlSessionFactory 빈 등록	(SqlSessionFactoryBean 이용)
+			- Mapper Instance 빈 등록	(MapperScannerConfigurer 이용)
+			- 각종 xxxServiceImpl 빈 등록 및 Mapper Instance와 빈 묶기	(component-scan, annotation-config)
+	
+
+	단일조건
+		검색조건 (이름, 연락처)
+	다중조건
+		부서, 직종
+	간격조건
+		급여
+		입사일
+	

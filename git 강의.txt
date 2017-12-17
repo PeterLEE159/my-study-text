@@ -1,0 +1,62 @@
+mvn 플러그인:아이디:끝
+mvn pluginId:goal
+mvn archetype:generate
+
+mvn 단계
+	- 각 단계는 특정 플러그인의 goal과 연관되어 있다
+	
+	mvn clean		target 디렉토리 삭제
+	mvn compile		소스파일 컴파일한 클래스 파일을 target 디렉토리에 생성
+	mvn test		모든 테스트케이스 실행, 오류 발생 시 빌드작업 중지
+	mvn package		jar, war, ear 파일로 패키징
+	mvn install		메이븐 로컬저장소에 패키징된 파일을 배포
+	mvn deploy		메이븐 원격저장소에 패키징된 파일을 배포
+
+tomcat과 maven연동해 서버 배포하기
+	1. 대상 프로젝트 maven package로 maven war 파일 생성
+	2. maven war를 tomcat\bin으로 이동
+	3. cd tomcat\bin -> startup으로 maven war를 디렉토리로 만들고 서버를 킨다
+	
+git 강의
+	branch
+			master			기본 branch
+			
+	fix에서 추가된 코드
+	
+	브랜치 만들기
+		git branch 브랜치명
+	
+	브랜치 만들고 이동하기
+		git checkout 브랜치명
+	
+	브랜치 리스트 보기
+		git branch
+	
+	브랜치 삭제하기
+		git branch -d 브랜치명
+	
+	브랜치 병합하기
+		git merge 브랜치명 (현재 브랜치에 병합할 프랜치명)
+	
+	원격 저장소 복제
+		git clone https://github.com/사용자명/저장소명
+	
+	원격저장소 추가
+		git remote add 원격저장소명 https://github.com/사용자명/저장소명
+		ex) git remote add origin https://github.com/사용자명/저장소명
+	
+	원격저장소 위치 보기
+		git remote -v
+	
+	원격저장소 삭제
+		git remote remove 원격저장소명
+	
+	원격저장소로 로컬 저장소의 내용 보내기
+		git push 원격저장소명
+		git push 원격저장소명 로컬저장소브랜치명
+	
+	원격저장소의 내용 로컬 저장소로 불러오기
+		git pull 원격저장소명
+		git pull 원격저장소명 원격저장소브랜치명
+	
+		

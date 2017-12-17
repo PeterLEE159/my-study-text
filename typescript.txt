@@ -1,0 +1,65 @@
+TypeScript
+	컴파일 과정을 거쳐서 Javascript 문서를 생성한다
+		** 컴파일 과정을 거쳐서 Javascript 문서화 시키는 기능을 가지는 script
+			- CoffeeScript, TypeScript, ClojureScript, GorillaScript ..
+			** CoffeeScript와의 주요 차이점
+				TypeScript는 Javascript의 상위호환버전으로써 (문법적으로 크게 차이가 없다) Javascript를 안다면
+				Typescript를 아는 것이나 다름없지만 CoffeeScript는 Javascript로 compile은 되지만 문법적으로 완전히 새로운 언어이다.
+				
+	
+	주요 장점
+		기능추가 (인터페이스, 추상클래스, 대수 등의 데이터타입 기능 ..)
+		문법적인 혁신의 자유로움 (@를 this 대신 사용)
+		익숙함 (타 객체지향적 언어의 특징에 익숙해진 개발자에 한하여 .., 데이터타입, 인터페이스, 클래스기반의 디자인패턴 )
+		커뮤니티 지원과 툴체인의 발전 (폭 넓은 사용자로 인한 지원)
+		Javascript표준과 상호호환 (Typescript는 그냥 Javascript이므로 도움이 되는 기능만을 사용하며 필요하지 않는 기능은 사용하지 않으면 된다)
+		호환성이 좋다(어떤 브라우저, 호스트, OS) 등에서 가용이 가능하다
+		
+	특징
+		Javasciprt보다 문법적으로 편하다
+		취하고 버릴것에 대해서 자유롭다
+		강력한 툴 (IDE, Web Storm, Sublime )등에서 Javascript보다 기능이 더 지원된다
+		다만 상위 호환셋으로써 Javascript와 사실상 동일하다
+		깃허브에서 개발되는 오픈소스
+	
+	Decorator
+		자바의 어노테이션과 유사하게 메타데이터를 저장할 수 있다.
+		다만 인터페이스로써 메타데이터만을 저장하는 자바의 어노테이션과는 달리 메소드나 프로퍼티를
+		직접 변경할 수 있다.
+		더 정확히는 함수를 파라미터로 받는 함수를 쉽게 선언할 수 있는 sugar syntax이다
+		또한 자바 리플랙션을 통해 어노테이션이 붙은 메소드 프로퍼티를 찾는 기능은 제공되지 않는다
+	
+	문법적 요소
+		class의 constructor
+			class HeroService {
+				constructor(private 변수1, public 변수2) {
+					... 
+				}
+				...
+			}
+			** private으로 선언된 변수는 field로써 적용되고 
+				public 으로 선언된 변수는 property로써 적용된다
+				
+		class 생성
+			class Hero {
+				id: number;
+				name: string;
+			}
+			
+		class 객체 생성
+			데이터타입 변수명: refClass = { .. }
+			데이터타입 변수명: refClass[] = [ { .. }, { .. } ];
+			
+			let(혹은 const) hero: Hero = { id: 3, name: '김신' };
+			let(혹은 const) heroes: Hero[] = [{id: 1, name: '이준'}, {id: 2, name: '조현준'}];
+		
+		함수 생성
+			함수명(변수: 클래스명): 리턴타입 {
+			}
+			
+			onSelect(hero: Hero): void {
+				this.selectedHero = hero;
+			}
+		
+		
+		

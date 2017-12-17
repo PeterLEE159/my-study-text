@@ -1,0 +1,417 @@
+Spring 기능별 정리
+	1. aop 설정
+		<aop:config>
+			<aop:pointcut expression="bean(*service)" id="myPointCut" />
+			<aop:aspect ref="simpleAdvice">
+				<aop:before method="getBoard" pointcut-ref=myPointCut" />
+			</aop:aspect>
+		</aop:config>
+		
+	2. transaction aop 설정
+		2.1 데이터베이스와 commit과 rollback을 관장하는 TransactionManager와 연동
+			<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+				<property name="dataSource" ref="dataSource" />
+			</bean>
+		
+		2.2 commit과 rollback 기능을 수행할 transactionManager의 속성(propagation)을 설정
+			<tx:advice id="txAdvice" transaction-manager="transactionManager" >
+				<tx:attributes>
+					<tx:method name="*" propagation="REQUIRED" />
+				</tx:attributes>
+			</tx:advice>
+		
+		2.3 rollback과 commit을 관장하는 transactionManager를 target과 aop binding을 함
+			<aop:config>
+				<aop:advisor advice-ref="txAdvice" pointcut="bean(*Service)"/>
+			</aop:config>
+	
+	3. ControllerAdvice 설정
+		Http Request가 들어올 때 @RequestMapping에 따라 지정된 메소드를 실행할 때 메소드에 적용된 어노테이션 옵션(시점)에 따라 지정된 함수가 실행
+		1. 클래스에 @ControllerAdvice를 설정
+			@ControllerAdvice
+			public class CommonControllerAdvice {
+			}
+		
+		2. 메소드에 다양한 옵션을 설정
+			2.1 @InitBinder 어노테이션이 적용된 함수는 Request가 들어올 때 Controller 객체에 지정된 함수가 실행되기전 데이터에 대한 처리에 주로 사용된다
+				public void binder(WebDataBinder binder) {
+					binder.registerCustomEditor(적용대상객체.class, new DataEditor())
+				}
+				class DataEditor implements PropertyEditorSupport {
+					SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+					
+					/*
+						변수를 객체에 담는다
+					*/
+					@Override
+					public String getAsText() {
+						String text = this.getValue();
+						return sdf.parse(text);
+					}
+					
+					/*
+						객체에 들어있는 값을 꺼낼 때 사용된다 (다시 클라이언트로 보낼 때 ? )
+					*/
+					@Override
+					public void setAsText(String text) {
+						this.setValue(sdf.parse(text));
+					}
+					
+					
+				}
+				
+			
+	
+	4. 파일 업로드
+		4.1 commons multipart library 를 dependancy 받는다
+			<dependency>
+				<groupId>commons-fileupload</groupId>
+				<artifactId>commons-fileupload</artifactId>
+				<version>1.3.3</version>
+			</dependency>
+			
+		4.2 multipartFileResolver를 통해 파일의 상태 (파일크기, 이름, 타입, 파일자체 객체)를 포함하는 빈 객체 설정
+			<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+				<property name="defaultEncoding" value="utf-8" />
+			</bean>
+			
+		4.3 MultipartFile 객체를 통해 파일업로드를 주입받는다
+				class FileObject (
+					MultipartFile file;
+				)
+				@RequestMapping()
+				public void uploadFile(FileObject fileObj) {
+					MultipartFile uploadedFile = fileObj.getFile();
+					if(!file.isEmpty()) {
+						String directory = "c:/temp;
+						String filename = uploadedFile.getOriginalName();
+						File file = new File(directory, filename);
+						FileCopyUtils.copy(uploadedFile.getBytes(), file);
+					}
+				}
+	
+	5. 파일 다운로드
+	
+		5.1 ModelAndView 객체를 리턴시켜서 String ViewName 을 반환해 jsp파일을 ViewResolver에서 결정해 View를 받는 대신 직접 ModelAndView를 지정해 
+			View의 type을 application/octet-stream 으로 변경해 html파일을 클라이언트에서 받는 대신 다운로드를 받을 수 있도록 response를 받을 뷰를 조정한다
+		@Controller
+		public class BoardController {
+			@Autowired
+			private FileDownloadView fileDownloadView;
+			
+			@Value("${file.directory}")
+			private String directory;
+			
+			@RequestMapping("download")
+			public ModelAndView download(int no){
+				FileObj obj = mapper.getFileObj(no);
+				ModelAndView mav = new ModelAndView();
+				mav.setObject("directory", fileDirectory);
+				mav.setObject("filename", obj.getFilename());
+				mav.setView(this.fileDownloadView());
+				
+				return mav;
+			}
+		}
+		
+		// 뷰를 직접 render해 다운로드 받을 수 있도록 header들을 조정한다 (Content-Type, Content-Length, Content-Disposition)
+		class FileDownloadView extends AbstractView {
+			@Override
+			protected void renderMergedOutputModel(Map<String, Object> model, HttpServletRequest request, HttpServletResponse response) {
+				String directory = String.valueOf(model.get("directory"));
+				String filename = String.valueOf(model.get("filename"));
+				filename = URLEncoder.encode(filename, "UTF-8"); // 한국어가 섞일 경우 전송간에 이름에 인코딩 문제가 발생할 수 있으므로 utf-8로 변환한다
+				
+				File file = new File(directory, filename);
+				FileInputStream fis = new FileInputStream(file);
+				OutputStream fos = response.getOutputStream();
+				
+				responset.setContentType("application/octet-stream");
+				response.setHeader("Content-Length", file.getLength()); // 바이트 크기
+				response.setHeader("Content-Disposition", "attachment;filename='"+filename+"'");
+				
+				FileUtils.copy(fis, fos);
+			}
+		}
+		
+		
+		// FileDonwloadView 빈 객체 설정한다
+		servlet-context.xml
+			<context:property-placeholder location="classpath:/META-INF/properties/config.properties" />
+			<bean class="com.board.web.view.FileDownloadView" />
+	
+	6. Interceptor
+		HandlerMapping이 요청된 uri에 대해 지정된 controller의 메소드를 실행 시키기 전 혹은 후에 실행시킬 코드를 적는다 (aop 개념)
+		필터와 기능이 겹치지만 근본적인 차이로는 의존성 주입기능간에 차이가 있다 interceptor에서는 의존성 주입이 가능하지만 
+		필터는 init-param을 통해 기본 데이터값만을 전달받기에 객체를 전달받기에는 무리가 있다
+		
+		6.1. 빈 환경설정 파일 관계설정
+
+			<mvc:interceptors>
+				<mvc:interceptor>
+					<mvc:mapping path="*.do"/>
+					<mvc:mapping path="/*/*.do"/>
+					<ref bean="loginCheckInterceptor" />
+				</mvc:interceptor>
+			</mvc:interceptors>
+			
+			<bean id="loginCheckInterceptor" class="com.board.web.interceptor.LoginCheckInterceptor" />
+		
+		6.2. HandlerInterceptorAdapter를 상속한 interceptor 객체를 만든다
+			class LoginCheckInterceptor extends HandlerInterceptorAdapter {
+				..
+			}
+			
+		6.3 기능예시
+			6.3.1 로그인 인증 체크
+				6.3.1.1 context 파일에서 set 빈객체를 만들어서 로그인 없이 접근 가능한 uri 리스트를 적는다
+							<util:set id="urlset">
+								<value>/home.do</value>
+								<value>/user/form.do</value>
+								<value>/user/add.do</value>
+								<value>/user/login.do</value>
+								<value>/board/home.do</value>
+								<value>/board/list.do</value>
+								<value>/board/detail.do</value>
+								<value>/board/filedownload.do</value>
+							</util:set>
+				6.3.1.2 set 빈객체를 property태그를 통해 interceptor객체에 주입한다
+							<bean id="loginCheckInterceptor" class="com.board.web.interceptor.LoginCheckInterceptor" >
+								<property name="urlSet" ref="urlset" />
+							</bean>
+				
+				6.3.1.3 interceptor preHandler() 에서 로그인 접근제어한다
+							class LoginCheckInterceptor extends HandlerInterceptorAdaptor {
+								Set<String> authRequiredUri;
+								public void set authRequiredUri(Set<String> authRequiredUri) {
+									this.authRequiredUri = authRequiredUri;
+								}
+								
+								@Override
+								public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+									String requestUri = request.getRequestURI();
+									if(!this.authRequiredUri.contains(requestUri)
+										return true;
+										
+									HttpSession session = request.getSession(false);
+									if(session == null)
+										return false;
+									
+									User user = (User)session.getAttribute("LOGIN_USER");
+									if(user == null)
+										return false;
+									
+									return true;
+								}
+							}
+	
+	7. 엑셀파일 IO
+		7.1 목적
+				엑셀파일 동적 생성과 다운로드가 가능하다
+				엑셀 테이블 셀들을 자바 데이터형으로 변환을 가능하게 하는 어댑터 기능을 수행한다	
+		
+		7.2 적용과정
+			7.2.1 디펜던시 적용
+					POI (Poor Obfuscation Implementation, 애매한 구현 ? - 조크섞인 이름)
+					<dependency>
+						<groupId>org.apache.poi</groupId>
+						<artifactId>poi-ooxml</artifactId>
+						<version>3.17</version>
+					</dependency>
+			
+			7.2.2 controller에서 ModelAndView 객체를 생성해 엑셀에 넣어줄 데이터값을 db에서 조회
+					@RequestMapping("exceldownload")
+					public void excelDownload() {
+						ModelAndView mav = new ModelAndView();
+						mav.addObject("boards", this.boardService.readAll());
+						
+						ExcelView ev = new ExcelView();
+						mav.setView(ev);
+					};
+					
+			7.2.3 AbstractXlsxView를 상속한 클래스에서 db에서 전해준 데이터값을 엑셀객체 Workbook에 삽입
+					public class ExcelView extends AbstractXlsxView {
+						
+					}
+		
+	8. pojo와 json, xml을 포맷, 파싱
+		8.1 dependancy
+			<!-- json 응답을 제공 -->
+			<dependency>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-databind</artifactId>
+				<version>2.9.2</version>
+			</dependency>
+			
+			<!-- pojo과 xml을 포맷, 파싱 -->
+			<dependency>
+				<groupId>com.fasterxml.jackson.dataformat</groupId>
+				<artifactId>jackson-dataformat-xml</artifactId>
+				<version>2.9.2</version>
+			</dependency>
+	
+		8.2 ResponseBody
+			RequestMapping으로 연동된 함수에서 ResponseBody는 return되는 객체를 HTML 응답메세지에서 응답바디로 전환시킨다.
+			
+			@RequestMapping("checkid")
+			public @ResponseBody CheckUser check(String userid) {
+				CheckUser check = new CheckUser();
+				
+				User user = this.userService.detail(userid);
+				check.setChecked(user != null);
+				
+				return check;
+			}
+				
+				
+	9. Rest
+		9.1. Controller에 RestController 어노테이션을 지정한다 (스프링 버전 4.0 부터 지원)
+			- 이것에 대한 의미는 해당 컨트롤러 내부의 모든 함수는 @ResponseBody 어노테이션을 주입받는 효과가 있다
+			@RestController
+			public class TodoController {
+				...
+			}
+			
+	10. Job Scheduler (Quartz)
+		10.1 디펜던시 받기
+			<!-- job scheduler -->
+			<dependency>
+				<groupId>org.quartz-scheduler</groupId>
+				<artifactId>quartz</artifactId>
+				<version>2.3.0</version>
+			</dependency>
+			<!-- Spring adater (quarts를 빈객체로 생성하도록 스프링에서 호환하는 디펜던시)-->
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-context-support</artifactId>
+				<version>${spring.framework.version}</version>
+			</dependency>
+			<!-- transaction api -->
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-tx</artifactId>
+				<version>${spring.framework.version}</version>
+			</dependency>
+			
+		10.2 빈 객체 등록
+			<!-- Quartz 스케줄러를 사용해 실행할 자겁이 구현된 클래스를 빈으로 등록 -->
+			<bean id="myJob" class="com.sample.scheduling.MyJob" />
+			
+			
+			<!-- Quartz 스케줄러가 실행할 구체적인 JobDetail 객체를 빈으로 등록 -->
+			<bean id="jobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+				<property name="targetObject" ref="myJob" />
+				<property name="targetMethod" value="work" />
+			</bean>
+			 
+			<!-- 
+				작업을 일정주기로 실행되는 trigger를 빈으로 등록한다 
+				SimpleTriggerFactoryBean을 사용하면 일정 시간간격으로 특정작업을 수행한다
+			-->
+			<bean id="intervalTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerFactoryBean">
+				<property name="jobDetail" ref="jobDetail" />
+				<property name="startDelay" value="1000" />
+				<property name="repeatInterval" value="3000" />
+			</bean>
+			
+			 
+			 <!-- 
+				작업을 어떤 주기로 실행할지가 정의된 Trigger를 빈으로 등록한다
+				CronTriggerFactoryBean을 사용하면 일정주기로 특정 작업을 수행할 수 있다
+				cron 표현식
+						초		분		시		일		월		요일		년(옵션) 		실행시기
+					ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+						* 		* 		* 		* 		* 		*
+						0 		0 		12 		* 		* 		? 					정오실행
+						0 		0/5 	12 		* 		* 		? 					12시 5분, 12시 10분, 12시 15분 ....(12시 ~ 13시까지 매 5분 마다 실행)
+						
+			  -->
+			<bean id="timeTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+				<property name="jobDetail" ref="jobDetail" />
+				<property name="cronExpression" value="0 0/1 11 * * ?" />
+			</bean>
+			 
+			<!-- Quartz Scheduler를 정의해 빈으로 등록하기 -->
+			<bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+				<property name="jobDetails">
+					<list>
+						<ref bean="jobDetail" />
+					</list>
+				</property>
+				<property name="triggers">
+					<list>
+						<ref bean="timeTrigger"/>
+						<ref bean="intervalTrigger"/>
+					</list>
+				</property>
+			</bean>
+	
+	11. Web Socket
+		11.1 디펜던시 받기
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-websocket</artifactId>
+				<version>${org.springframework-version}</version>
+			</dependency>
+			
+		11.2 웹소켓 세션관리
+			class CustomerSocketHandler extends TextWebSocketHandler {
+				private Set<WebSocketSession> sessions = new HashSet();
+				
+				public void sendMessage(String text) {
+					Iterator it = sessions.iterator();
+					while(it.hasNext()) {
+						WebSocketSession session = it.next();
+						session.sendMessage(new TextMessage(text));
+					} catch(IOException e) {
+						sessions.remove(session);
+					}
+				}
+				
+				@Override
+				public void afterConnectionEstablished(WebSocketSession session) {
+					sessions.add(session);
+				}
+				
+				@Override
+				public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+					sessions.remove(session);
+				}
+				
+				@Override
+				public void handleTransportError(WebSocketSession session, Throwable throwable) throws Exception (
+					sessions.remove(session);
+				)
+			}
+		
+		11.3 서비스단에서 세션객체 이용
+			@Autowired
+			private CustomSocketHandler handler;
+			
+			public void update(Course course) {
+				this.mapper.update(course);
+				handler.sendMessage("done");
+			}
+			
+		11.4 js 설정
+			$(function() {
+				// 웹소켓과 연결
+				var websocket = new WebSocket('ws://localhost:8080/course.do');
+				
+				
+				websocket.onopen = function() {
+					console.log('서버와 연결됨');
+				}
+				
+				websocket.onmessage = function(event) {
+					var data = event.data();
+				}
+				
+				websocket.onerror = function() {
+				
+				}
+				
+				websocket.onclose = function() {
+				
+				}
+			});

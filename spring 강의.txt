@@ -1,0 +1,515 @@
+spring의 개발철학
+	- POJO(Plain Old Java Object)기반의 애플리케이션 개발
+		Light Weight, 재사용성, 유지보수
+	
+	- IOC(제어역전, Inversion Of Control) 의 구현체
+		프로젝트 전체구조를 설계
+	
+	- AOP(관짐지향 프로그래밍, Aspects Of Programming) 의 구현체
+		공통기능을 선언적 방법으로 제공
+	
+	- 편리한 MVC Library 지원
+		model2 web application 개발
+		
+IOC(Inversion Of Control)
+	- 제어역행
+	- 필요한 객체를 획득하는 책임이 그 객체에 있는게 아니라 외부로부터 받는 것이다
+
+IOC 방법
+	- DI(Dependency Injection)	의존성 주입
+		의존하는 객체를 다른 존재로부터 제공받는다
+	- DL(Dependency Lookup)	 	의존성 찾기
+		다른 존재가 미리 만들어 놓은 객체를 가져온다
+		
+스프링
+	- DI의 구현체
+	- 스프링의 BeanFactory와 ApplicationContext 인터페이스의 구현체들이 객체 생성/조립작업을 수행한다
+	- BeanFactory와 ApplicationContext의 구현체를 Spring Container라고 부른다
+	- 스프링 컨테이너는 스프링의 가장 핵심 구현체다
+	- 스프링 컨테이너는 객체생성/조립/라이프사이클 등을 책임진다
+	- 스프링 컨테이너는 Bean Configuration 정보를 분석해 객체/조립 작업을 수행한다
+	- 스프링 컨테이너는 특별한 설정이 없는 한 모든 객체를 싱글턴 객체로 생성한다
+	
+	
+spring ibatis 연동
+	1. pom.xml 의존성 설정
+		- spring-orm
+		- ojdbc6
+		- ibatis-2.3.4.726
+	
+	2. ibatis mapper 파일 생성
+		/META-INF/ibatis/mappers/job.xml (SQL 정의)
+	
+	3. ibatis config 파일 정의
+		/META-INF/ibatis/SqlMapConfig.xml (매퍼파일 등록)
+	
+	4. xxxDao 클래스 구현
+		sqlMapClientTemplate 타입 변수 선언 및 setter 선언
+	
+	5. spring bean configuration 파일 설정
+		- DataSource 빈 등록
+		- ibatis 핵심객체(SqlMapClient) 빈 등록 <- SqlMapClientFactoryBean 활용 <- ibatis config 파일, DataSource
+		- ibatis용 템플릿 객체 빈 등록 <- SqlMapClient 객체
+		- xxxDao 빈 등록			   <- SqlMapClientTemplate 객체
+		
+spring 컨테이너
+	- root-context.xml
+		- servlet-context.xml 접근불가
+		- service, dao
+		
+	- servlet-context.xml
+		- root-context.xml 접근가능
+		- root-context.xml에서 등록된 빈들의 정보를 servlet.context.xml에서 호출해 주입한다
+		
+spring 어노테이션
+	@Resource
+		- @AutoWired와 @Qualifier 어노테이션 두가지 역할을 한번에 수행하는 어노테이션 ( @AutoWired + @Qulifier )
+		- @AutoWired의 기능은 Type으로만 구분해서 프로퍼티를 config xml파일로부터 읽어오지만 @Resource는 name을 변수로 프로퍼티를 명시적으로 지정할 수 있다
+		- 어노테이션이 부착된 곳의 타입과 일치하는 타입의 빈을 찾아 자동으로 주입한다
+		- @Resource(name="빈아이디")와 같은 형식으로 사용하면 config xml에서 타입, 아이디와 일치하는 빈을 찾아 주입한다
+		
+	@AutoWired
+		- 그 클래스가 spring xml에 지정된 빈을 주입받고 싶은 객체를 지정하기 위해 사용된다
+		- 변수뿐만 아니라, setter 메소드, 생성자 메소드에 부착할 수 있다 (옵션)
+				@Target({ ElementType.CONSTRUCTOR, ElementType.FIELD, ElementType.METHOD, ElementType.ANNOTATION_TYPE })
+		- 같은 타입의 객체가 2개 이상 빈으로 등록되어 있는 경우는 주입 시 에러가 발생한다
+				@Qualifier 혹은 @Resource 어노테이션을 사용해 하나를 지정가능
+		- 주입받고 싶은 객체가 스프링의 빈에 없으면 에러가 발생한다
+		
+	@Required
+		- 명시적으로 필수적 프로퍼티인점을 나타내기 위해 사용된다 보통 setter 메소드에 사용되며 @Required가 붙은 프로퍼티에 주입되는 코드가 config파일에 작성되지 않으면 BeanCreationException 예외가 발생한다
+		- @Required는 setter 메소드에 부착된다
+		- @Required를 setter 메소드에 부착하면 <property>나 <construct-arg>를 사용해 명시적으로 빈을 주입하여야 하고 그렇지 않으면 예외가 발생한다
+		- 빈을 스캔해서 자동으로 등록하고 @AutoWired로 빈을 자동으로 묶어주는 경우에 @AutoWired가 주입받고 싶은 빈이 존재하지 않으면 예외가 발생하기에 @Required는 사용목적이 무의미하다
+		
+	@Qualifier
+		- @AutoWired 만을 사용하는 경우 타입이 같은 빈이 두 개 이상일 때 에러가 발생한다 이를 방지하기 위해 @Qulifier 어노테이션을 사용해 빈 하나하나에 타입을 정의해 구분한다
+		
+	@PostConstruct
+		- 객체 생성 직후에 실행되는 함수에 붙이는 어노테이션
+	@PreDestroy
+		- 객체 파괴 직전에 실행되는 함수에 붙이는 어노테이션
+	
+	@Component		공통모듈
+	@Controller		Controller
+	@Service		Service
+	@Repository		DAO
+		spring config파일에 빈객체로 등록하게 하는 기능은 모두 같다
+		이렇게 구분을 지어놓은 이유는 사용자가 controller에만 접근할지, service들에만 접근할지, dao에만 접근할지 구분하기 위함이다
+		
+	MVC 개요
+		DispatcherServlet
+			모든 요청을 받는다 (FrontController처럼 작동)
+		HandlerMapping
+			특정 url을 지정된 controller에 mapping 시킨다
+		Controller
+			client의 요청을 HandlerMapping에서 실행시키는 메소드 대상
+		Interceptor
+			Controller가 실행되기 전에 전처리기로써 실행된다 (로그인 환경 조회 등)
+		View
+			모델에 있는 데이터를 특정한 형식으로 보여주는 형식 (html, json, xml 등)
+		ViewResolver
+			뷰를 랜더링할 지정된 뷰를 결정한다
+			
+	AOP 개요
+		- 객체지향 프로그래밍을 보완하는 개념으로 어필리케이션으로 객체지향적으로 모듈화하여 작성하더라도 다수의 객체들에 분산되어 중복적으로 존재하는
+		공통된 관심사가 여전히 존재한다
+		- AOP는 어플 횡단관심으로 분리해 핵심관심과 엮어서 처리할 수 있는 방법을 제공한다
+		- 로깅, 보안, 트랜잭션등의 공통적 기능의 활용을 기존의 비즈니스 로직에 영향을 주지 않고
+		  모듈화 처리를 지원하는 프로그래밍 기법
+		- 필요 dependency
+			aspectj runtime, aspectj weaver, spring-aop
+		
+		주요개념
+			- Target
+				- 핵심로직이 구현된 객체, 공통기능의 적용대상 객체
+			
+			- Join Point ( 참여 포인트 )
+				- 횡단관심(Crossing Concerns) 모듈이 삽입되어 동작할 수 있는 실행 가능한 특정위치를 말함
+				- 메소드 호출, 메소드 실행자체, 클래스 초기화, 객체 생성시점 등
+			
+			- Advice
+				- 공통기능이 구현된 모듈 (클래스)
+			
+			- PointCut
+				- 공통기능 적용규칙
+			
+			- Aspect
+				- Advice + PointCut (aop적용을 위한 패키지)
+				
+			- Weaving
+				- Pointcut에 의해 결정된 JoinPoint에 지정된 Advice를 삽입하는 과정
+				
+		주요 장점
+			중복코드 제거
+				- 횡단괌심을 여러 모듈에 반복적으로 기술되는 현상을 방지
+			비즈니스 로직 가독성 향상
+				- 핵심기능 코드로부터 횡단관심코드를 분리함으로 비즈니스 로직의 가독성 향상
+			생산성 향상
+				- 비즈니스 로직의 독립으로 인한 개발의 집중력을 높힘
+			재사용성 향상
+				- 횡단 괌심코드는 여러모듈에서 재사용 가능
+			변경 용이성 증대
+				- 횡단괌심코드가 하나의 모듈로 관리되기에 이에 대한 변경 발생시 용이하게 수행가능
+				
+		Spring의 AOP 지원
+			- 스프링은 프록시 기방늬 런타임 Weaving방식을 지원한다
+			- 스프링은 AOP 구현을 위해 3가지 방식을 제공한다
+				- @AspectJ 어노테이션을 이용한 AOP 구현
+				- XML Scheme을 이용한 AOP 구현
+				- 스프링 API를 이용한 AOP 구현
+			- 실행환경은 XML Schema를 이용한 AOP 구현방법을 사용한다
+			
+		
+		aop:around 를 사용한 예 (데이터베이스 트랜잭션)
+			public class TransactionAdvice {
+				public Object tx(ProceedingJoinPoint jp) {
+					Object obj = null;
+					
+					tx.start();
+					try {
+					} catch(Exception ex) {
+						tx.rollback();
+						throw new Exception(ex);
+					} finally {
+						tx.end();
+					}
+				}
+			}
+		
+		AOP (Aspect Oriented Programming)
+			- 관점지향 프로그래밍
+			- 대부분의 프로그램 소스는 핵심로직(Core Concerns)와 공통기능로직(Crossing Concerns)이 섞여있다
+			- 공통기능로직은 로깅, 보안, 트랜잭션, 프로파일링, 예외처리 등의 코드이다
+			- 공통기능로직은 여러 소스에 흩어져 있다
+			- 공통기능로직으로 인해 코드의 중복, 핵심로직을 파악하기 힘들고 생산성이 떨어진다
+			- 관점지향 프로그래밍은 공통기능로직을 모듈화해서 (별도의 클래스로 정의) 핵심 기능로직에 적용되도록 지원하는 프로그래밍 기법
+			
+		AOP의 장점
+			- 중복코드의 제거
+			- 핵심로직코드의 가독성 향상
+			- 공통기능로직의 재활용성 증대
+			- 공통기능로직의 변경부담이 줄어든다
+			- 핵심기능이 구현된 대상객체에 공통기능로직의 탈부착이 쉽다
+			* 장점에도 불구하고 굉장히 제한적으로 사용됨
+				- 로깅, 트랜잭션 처리, 예외처리 을 대상으로만 사용된다
+		
+		Spring AOP
+			- Spring Container는 AOP 구현체다
+			- Spring Container는 공통기능구현된 빈과 핵심기능이 구현된 대상객체를 weaving해서 공통기능과 핵심기능이 함께 실행되도록 구현된 Proxy객체를 생성한다
+			- Spring AOP는 aspectJ라이브러리를 활용해 AOP를 지원한다
+			- POJO 클래스를 사용해 공통기능이 구현된 Advice를 만든다
+			- 공통기능로직이 구현된 Advice도 다른 빈을 DI받을 수 있다
+			
+			- 포인트컷 표현식
+				aspectJ 라이브러리의 표현식을 사용한다
+				advice가 결합되는 규칙을 지정한다
+					"execution(메소드이름)"
+						execution(* com.sample.SampleService.*(..))		// SampleService 클래스의 모든 함수에 적용
+						execution(* com.sample.*Service.*(..))			// com.sample 패키지에서 Service로 이름이 끝나는 클래스가 가진 함수들을 대상으로 한다
+						execution(* com.sample.*Service.find*(..))		// m.sample 패키지에서 Service로 이름이 끝나는 클래스의 find로 끝나는 함수들을 대상으로 한다
+						execution(* com.sample..*Service.*(..))			// com.sample 모든 하위 패키지에서 Service로 이름이 끝나는 클래스의 모든 함수들을 대상으로 한다
+						execution(* com.sample..*Service.*(*))			// com.sample 모든 하위 패키지에서 Service로 이름이 끝나는 클래스에서 매개변수가 하나인 함수들을 대상으로한다
+						execution(* com.sample..*Service.*(int, ..))	
+							// com.sample 모든 하위 패키지에서 Service로 이름이 끝나는 클래스에서 매개변수 첫번째가 int인 모든 함수들을 대상으로 한다
+						execution(* com.sample..*Service.*(int, *))		
+							// com.sample 모든 하위 패키지에서 Service로 이름이 끝나는 클래스에서 매개변수 첫번째가 int이고 두번째로 어떤 파라미터가 들어오는 함수들을 대상으로 한다
+					"within(클래스이름)"
+						within(com.sample.SampleService)
+						within(com.sample.*Service)
+						within(com.sample..*Service)
+						within(com.sample..*)
+					"target(클래스이름)"	// within과는 달리 와일드카드를 쓸 수 없어 하나의 클래스에만 명시적으로 pointcut을 잡을 때만 쓰인다 (즉 사용빈도가 낮거나 아예없다)
+						target(com.sample.SampleService)
+					"args(매개변수타입)"
+						args(com.sample.User)
+							// User 객체를 매개변수로 받는 함수만을 대상으로 한다
+					"bean(빈의이름)"
+						bean(simpleService)
+						bean(*Service)
+					"@within(어노테이션이름)"		// 지정되는 annotation을 갖는 모든 클래스를 대상으로 한다
+						@within(org.springframwork.transaction.annotation.Transactional)
+					"@args(어노테이션이름)"			// 단일 파라미터를 받고 지정되는 annotation을 갖는 모든 함수들을 대상으로 한다
+						@args(x.y.z.RequestParam)
+					
+				와일드카드
+				---------------------------------------------------------------
+						  | 매개변수	| 클래스 이름		| 패키지
+				---------------------------------------------------------------
+					*	  | Any			| All				| All
+					..	  | 0 ~ 무한대	| x					| 하위패키지
+				---------------------------------------------------------------
+			
+		Spring의 선언적 트랜잭션 처리
+			- 트랜잭션 처리는 웹 애플리케이션 개발에 반드시 필요한 처리
+			- 트랜잭션 처리는 프로젝트 여러곳에서 공통적으로 사용되는 공통로직기능이다
+			- spring에서는 AOP를 이용해 트랜잭션처리를 지원한다
+			- 스프링은 다양한 DataAccess 기술에 대한 트랜잭션처리 서비스를 제공한다
+			- 스프링은 트랜잭션 처리를 지원하는 Advice 역할을 수행하는 트랜잭션 매니저를 제공한다
+				spring, JDBC, ibatis, mybatis			- DataSourceTransactionManager
+				JPA (Java Persistent API), Hibernate	- JpaTransactionManager, HibernateTransactionMnager
+				JTA (Java Transaction API)				- JtaTransactionManager
+				* 모든 트랜잭션 매니저는 PlatformTransactionManager 인터페이스의 구현체이다
+				
+			- 스프링은 두가지 방식의 트랜잭션 처리를 지원한다, 선언적 트랜잭션 처리 - XML설정이나 @Annotation을 활용하는 트랜잭션 처리
+				- 선언적 트랜잭션 처리, XML 설정이나 @Annotation을 활용하는 트랜잭션 처리
+					1. @Annotation을 활용한 트랜잭션 처리
+						1.1 context-app.xml에 @Transactional 어노테이션을 사용할 수 있는 태그 삽입
+								<tx:annotation-driven />
+						1.2 transaction 처리 적용대상 클래스 혹은 메소드에 @Annotational 어노테이션을 삽입
+								@Transactional
+								public class ***Service {
+									...
+								}
+					
+					2. XML설정을 활용한 트랜잭션 처리
+						2.1 tx:advice를 이용해 dataSource가 연동된 transaction(데이터베이스 동기화 저장소의 기능을 가진) 객체를 연결
+							<!-- DataSource를 TransactionManager에 위임한다 -->
+								<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+									<property name="dataSource" ref="dataSource" />
+								</bean>
+							<!-- Transaction 데이터베이스 병행제어 기법을 정의한다 -->
+							<tx:advice id="txAdvice" transaction-manager="transactionManager" >
+								<tx:attributes>
+									<tx:method name="*" propagation="REQUIRED" />
+								</tx:attributes>
+							</tx:advice>
+						2.2 tx:advice 객체를 적용할 타겟에 지정한다
+							<!-- 정의된 트랜잭션 객체를 포인트컷을 이용한 타겟에 바인딩한다 -->
+							<aop:config>
+								<aop:advisor advice-ref="txAdvice" pointcut="within(com.sample.service..*Service)"
+							</aop:config>
+							
+				- 프로그래믹 트랜잭션 처리 - 프로그램 소스에서 직접 트랜잭션처리 API를 코딩해 트랜잭션 처리
+		
+		spring mvc
+			- MVC 패턴의 웹 애플리케이션 개발을 지원하는 스프링 라이브러리
+			- 주요 컴포넌트
+				DispatcherServlet 클래스
+					FrontController 역할 수행, 모든 클라이언트에 대한 요청을 받는다
+					웹 요청과 응답에 대한 처리를 관리한다 (Command Center)
+					
+				HandlerMapping 인터페이스
+					요청 url을 분석해 어떤 컨트롤러를 실행할지 결정한다
+					BeanNameUrlHandlerMapping, RequestMappingHandlerMapping 등의 구현체가 있다
+					* RequestMappingHandlerMapping은 RequestMapping("/list.do")의 정보를 분석해 어떤 컨트롤러를 실행할지 결정한다
+			
+				Controller 클래스
+					클라이언트의 요청을 처리한다
+					클라이언트에게 전달할 데이터를 Model에 담는다
+					클라이언트에게 표시될 뷰 페이지를 결정한다
+				
+				ModelAndView 클래스
+					컨트롤러의 수행결과로 반환되는 객체이다
+					클라이언트에게 전달할 데이터가 Model에 담긴다
+					클라이언트에게 표시될 뷰페이지가 View에 담겨있다
+				
+				ViewResolver 인터페이스
+					뷰이름을 분석해 View객체를 반환한다
+					InternalResourceViewResolver가 대표적인 구현체
+					
+					* InternalResourceViewResolver
+						InternalResourceView, JstlView, RedirectView를 제공한다
+					
+						public String add() {
+							return "redirect:/list.do"
+						}
+				
+				View 인터페이스
+					Model에 담겨있는 데이터를 지정된 타입의 컨텐츠로 변환해 응답으로 제공하는 객체
+		
+		spring component-scane을 통한 annotation filtering
+			- 지정된 패키지에서 스캔대상, 스캔제외대상을 지정할 수 있다
+			- <context:include-filter /> 부터 먼저 작성 후 <context:exclude-filter /> 를 작업할 수 있다
+			
+			예시
+				<context:component-scan>
+					<context:include-filter type="annotation" expression="org.springframework.streotype.Service" />
+					<context:exclude-filter type="annotation" expression="org.springframework.streotype.Controller" />
+				</context:compoentn-scan>
+				
+		@ControllerAdvice
+			
+			- 모든 컨트롤러 클래스에서 공통으로 사용되는 설정이 구현된 클래스를 지정하는 어노테이션이다
+				- 예외처리와 관련된 설정을 한다
+					ExceptionHandler 메소드를 등록한다
+					
+			- @ControllerAdvice가 부착된 클래스는 자동 스캔대상 클래스가 된다
+			
+			- @InitBinder
+				- WebDataBinder에 사용자정의 PropertyEditor를 추가한다
+				  파라미터 값이 날짜형식의 문자열인 경우 java.util.Date 형식으로 변환해 xxxForm객체의 프로퍼티나 요청핸들러 메소드의 매개변수에 바인딩시킨다
+					@InitBinder
+					public void binder(WebDataBinder binder) {
+						binder.registerCustomEditor(edit목적객체.class, PropertyEditorSupport상속 클래스 객체);
+					}
+					
+					public class DateEditor extends PropertyEditorSupport {
+						private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+						@Override
+						public void setAsText(String text) {
+							this.setValue(sdf.parse(text));
+						}
+						
+						@Override
+						public String getAsText() {
+							text = sdf.format(this.getValue());
+							return text;
+						}
+					}
+						
+			- @ExceptionHandler
+				- @ExceptionHandler는 예외객체와 exceptionHandler 메소드를 매핑시킨다
+				- 지정된 예외객체가 발생하면 그 예외객체와 연관된 exceptionHandler 메소드를 스프링이 실행시킨다
+				- exceptionHandler 메소드는 예외와 관련된 로그를 출력하고 에러페이지로 이동시킨다
+					@ExceptionHandler(예외객체.class)
+					public String xxxExceptionHandler(예외객체 ex) {
+						로그출력
+						return "에러페이지이름";
+					}
+					
+					
+		스프링에서의 폼 유효성 체크
+			- 폼 유효성 체크와 관련된 의존성 추가하기
+				<!-- validation -->
+				<dependency>
+					<groupId>javax.validation</groupId>
+					<artifactId>validation-api</artifactId>
+					<version>2.0.0.Final</version>
+				</dependency>
+
+				<!-- hibernate validator -->
+				<dependency>
+					<groupId>org.hibernate.validator</groupId>
+					<artifactId>hibernate-validator</artifactId>
+					<version>6.0.3.Final</version>
+				</dependency>
+			
+			- 컨트롤러에서의 설정
+				1. UserForm의 각 프로퍼티에 유효성 체크와 관련된 메타정보를 설정한다
+				
+				2. 입력폼으로 이동할 때 UserForm 객체를 생성해 model에 담는다
+					* 입력화면에서는 기본적으로 UserForm객체의 변수에 접근해 그 값을 표시하기 때문이다
+					
+				3. 입력을 처리하는 요청처리 메소드에서는 유효성체크 대상객체의 앞에 @Valid를 추가한다
+					유효성체크 대상객체 바로 다음에 BindingResult 타입의 매개변수를 선언한다
+					* @Valid는 해당객체에 대한 유효성체크를 수행한다
+					  유효성체크 수행결과 유효성체크를 통과하지 못하는 값이 있는 경우 bindingResult에 Error(필드명, 코드, 에러메세지)를 추가한다
+					public String add(@Valid UserForm userForm, BindingResult errors) {
+						if(errors.hasErrors())
+							return "입력폼.jsp";
+					}
+					
+				4. 입력폼에서의 설정
+					1. 스프링 폼태그 라이브러리를 추가한다
+						<%= taglib="form" uri="http://www.springframework.org/tags/form" %>
+					2. <form/>, <input/>, <textarea> 를 <form:form />, <form:input />, <form:textarea /> 으로 바꾸고 
+						<input name="username"> 을 <form:input path="username" /> 으로 바꾼다
+						path에 들어가는 이름은 컨트롤러 설정에서 model.addAttribute("userForm", new UserForm()) 이어야 한다
+					3. <form /> 태그에 commandName속성을 추가한다
+						<form:form commandName="userForm" >
+						* 컨트롤러의 설정에서 model에 담을 때 사용했던 이름이다
+					4. 에러메세지 출력하게 하기
+						<form:errors /> 태그를 사용하면 메세지를 출력할 수 있다
+						<form:errors path="password" cssClass="text-danger"></form:errors>
+				
+				
+		스프링에서의 파일업로드 처리하기
+			1. commons fileupload 라이브러리를 의존성에 추가한다
+				<dependency>
+					<groupId>commons-fileupload</groupId>
+					<artifactId>commons-fileupload</artifactId>
+					<version>1.3.3</version>
+				</dependency>
+				
+			2. servlet-context.xml에 멀티파트 요청을 처리하는 MultipartResolver를 등록한다
+				<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+					<property name="defaultEncoding" value="utf-8" />
+				</bean>
+				* CommonMultipartResolver는 commons fileupload, commons io 라이브러리를 사용해 파일업로드 처리 및 멀티파트요청을 처리한다
+				
+			3. 폼에서 전달되는 첨부파일 정보는 MultipartFile 타입의 변수를 선언해서 처리한다
+				<input type="file" name="attachedFile" />
+				public class BoardForm (
+					private MultipartFile attachedFile;
+				)
+				@RequestMapping(value="upload_file.do)
+				public String fileuploadprocess(MultipartFile attachedFile)
+			
+			4. MultipartFile로부터 첨부파일의 이름, 크기, 타입, 파일데이터를 가져와서 다른정보와 함께 DB에 저장하고 첨부파일을 지정한 디렉토리에 저장한다
+		
+		ibatis/mybatis 에서 부적합한 열 유형: 1111 에러 발생시 대처하기
+			ibatis/mybatis에서 null값이 허용되는 컬럼에 실제로 null값을 저장하면 부적합한 열 유형: 1111 에러가 발생한다
+			전달되는 파라미터 값에 jdbcType을 설정하면 에러없이 null값을 저장할 수 있다
+				ibatis
+					insert into tableName ( .. )
+					values(#name:VARCHAR# ... )
+				
+				mybatis
+					insert into tableName ( .. )
+					values (#{name, jdbcType=VARCHAR})
+					
+				지원되는 jdbcType
+					CHAR, VARCHAR, DATE, NUMERIC, TIMESTAMP, CLOB, BLOB ... 
+					
+		Spring Interceptor
+			DispatcherServlet에서 요청된 URI에 지정된 controller의 method를 실행시키기 전이나 (preHandler) 혹은 실행 시킨 후 (postHandler) 메소드를 통해
+			http 요청에 대한 전처리 및 후처리가 가능하다
+	9. RESTful
+		- REST (Representational State Transfer)는 현재 시점의 정보를 제공한다
+			* Representation (표현)
+				- REST는 XML, JSON 형식으로 데이터를 표현한다
+			* State (상태)
+				- 현 시점의 데이터 상태
+			* Transfer (전송)
+				- REST는 애플리케이션에서 다른 애플리케이션으로 데이터(리소스)를 전달한다
+
+		- REST는 데이터 중심에만 관심이 있다
+			(데이터 저장/조회/변경/삭제), CURD
+
+		- REST는 URL을 이용한 웹 서비스
+			* REST는 URL을 이용한 웹 서비스
+			* REST는 데이터 (리소스)를 확인할 수 있는 URL을 가진다
+
+		- REST는 HTTP의 method를 사용해 rest가 어떤 동작을 수행할 지 결정한다
+			생성 - POST, 읽기 - GET, 변경 - PUT, 삭제 - DELETE
+
+		- 과거에 SOAP (Simple Object Access Protocol) 에서 진보된 (혹은 개선된) 기술이다
+
+	10. Restful 의 URL 및 리소스 흐름
+				method 			url 				요청데이터 			응답데이터
+		--------------------------------------------------------------------------
+		생성 		POST 			/employees 			O 				O
+		읽기 		GET 			/employees 			X 				O
+		읽기		GET 			/employees/23 		X 				O
+		변경 		PUT 			/employees/23 		O 				O
+		삭제 		DELETE 			/employees/23 		X 				O
+
+	11. 서버에서 데이터를 받는 방식
+		11.1 enctype="application/x-www-form-urlencoded"
+			title=연습&dates=2017-10-21
+		11.2 enctype="multipart/form-data"
+			---WebKitFormBoundarysJeDB3yME------------------------
+				name=연습
+			---WebKitFormBoundarysDeBQ16ME------------------------
+				dates=2017-10-21
+				....
+
+
+		11.3 enctype="application/json"
+		11.4 enctype="application/xml"
+			json, xml을 서버에서 받을 때는 받는 파라미터에 @RequestBody 어노테이션을 지정해 줘야 json, xml을 파싱 해 객체에 데이터를 삽입한다
+		 	예)
+		 		$.ajax({
+		 			data: JSON.stringify({contents: '처음으로 가입했네요', name: '이칠숙'}),
+		 			type: 'post',
+		 			contentType: 'application/json',
+		 			dataType: 'json' ..
+		 		});
+
+		 		public class TodoController {
+		 			@PostMapping("/todos")
+		 			public Todo addTodo(@RequestBody todo) {
+		 				...
+		 			}
+		 		}

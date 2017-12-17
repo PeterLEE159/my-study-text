@@ -1,0 +1,24 @@
+spring, spring mvc, spring boot 차이점
+
+단순 spring의 주요장점
+	1. (DI를 통한 ) 중복적 코드 해결
+	2. 타 프레임웤과의 호환성
+
+spring boot
+	개발배경
+		bean 객체 생성의 까다로움
+			- config파일에서 일일이 bean객체를 생성해줘야 한다
+		외부 dependancies를 pom에 입력 시 코드를 일일히 찾아 다녀야한다
+			- pom의 dependancy주입 시
+
+	개발목적
+		손쉽게 어플리케이션의 환경설정파일을 설정할 수 있도록 한다
+			모듈 자동화 (Automatic Modules)
+			- bean객체 생성 자동화 (굳히 config파일에 bean객체를 생성하지 않고 다른 손쉬운 방법으로 .. )
+		dependancy 그룹을 생성해 한번에 주입받는다
+
+		** 그 외 목적
+			서비스 감시기능과 분리시켜서 관점지향으로 작업을 가능하게 한다
+
+
+

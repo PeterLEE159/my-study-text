@@ -1,0 +1,326 @@
+angular2+
+	특징
+		reactive single page application(SPAs), 싱글 웹페이지 (네비, 메뉴, 툴바 등은 변경없이 ajax
+		로만 통신해 데이터를 전송받는다.
+	
+	버전 2,4,5 angular js의 차이점
+		2, 4, 5는 큰차이가 없다 (3은 스킵됨)
+	
+	
+	
+	프로젝트 구조
+		./src/app
+			싱글페이지 로딩 대상 template, ts, css
+		./src/assets
+			이미지 등 res파일
+		./index.html
+			싱글 페이지
+			
+		.src/main.ts
+			module 관리 ts파일
+		
+		.src/app/app.component.ts
+			component 관리
+		
+		./src/app/app.module.ts
+			
+
+	angular2+ project 시작
+		- cli에서 ng를 조정하는 npm package global 설치
+			npm install -g @angular/cli
+			
+		- ng 프로젝트 생성
+			ng new new-project-name
+			
+		- ng 서버 시작
+			ng serve --open
+		
+		- ng component 생성
+			ng generate component new-component-name
+			혹은
+			ng g c new-component-name
+			** .ts 파일에 생성되는 메타 프로퍼티
+				- selector
+					css 방식의 component 선택자 
+						- css를 가리키는게 아니라 template를 가리킨다
+						- 다른 template에서 component 선택자를 통해 template를 include 시킬 수 있다
+					
+				
+				- templateUrl
+					component template 파일의 위치
+				
+				- template
+					inline template
+				
+				- styleUrls
+					component의 private css style의 위치
+					
+				- inline style
+					component의 decoration 내의 styles으로 직접 css styling을 한다
+		
+				
+				
+		
+		
+	npm 2+ 사용도 변경
+		npm module기반
+		javascript -> typescript
+	
+	
+	서비스
+		목적
+			component는 데이터를 직접적으로 주입받는게 아니라 service를 통해 데이터를 주입받아야 한다
+			CRUD 작업 수행 (서버측의 service와 기능상 유사하며 독자적으로 서버에 데이터를 crud 할 수 있다)
+			
+		생성 (cli)
+			ng generate service new_service
+			혹은
+			ng generate service new_service --module=app
+				목적
+					새로운 서비스를 싱글톤 객체로 생성해 필요한 component에서 사용 할 수 있도록 한다
+					(서비스가 app 모듈에 붙게된다)
+				ex)
+					app.module.ts
+						import { MessageService } from './message.service';
+						@NgModule({
+							providers: [ MessageService];
+						});
+						
+		위치
+			./new_service.ts
+		제공방법
+			Component, Module을 통해 service의 데이터를 model에 주입한다
+			
+		
+		
+	angular 문법
+		- 데이터 포맷
+			pipeline을 통한 데이터 (숫자, 돈, 날짜 등 ) 포맷팅
+				* uppercase
+					대문자화
+				* lowercase
+					소문자화
+			
+			ex)
+				<h2>{{ hero.name || uppercase }}</h2>
+				
+		- component 데이터 변경
+			<input> 태그를 활용해 component데이터 변경
+			** two-way binding (component 읽어오기 및 갱신하기)
+				- 사전작업사항
+					AppModule 설정
+						./src/app/app.module.ts 설정
+						FormsModule을 import후 
+						@NgModule의 import 객체에 삽입해 전체 앱에서 모듈로써 호출이 가능하도록 설정한다
+						FormsModule는 two-way bingding에서 [{NgModule}]="hero.name" 에서 처럼 input이나 textarea
+						태그를 통해 특정 component를 갱신한다
+						ex)
+							import { FormModule } from '@angular/forms';
+							
+							@NgModule({
+								imports: [
+									BrowserModule,
+									FormsModule
+								],
+							});
+				
+							<input [(ngModel)]="hero.name" placeholder="이름을 입력해주세요" >
+		
+		- [(ngModel)]를 통해 value에 값을 동기화
+			<input [(ngModel)]="selectedHero.name" />
+		
+		- *ngFor를 통한 반복
+			ul li, 혹은 tbody tr 등을 통한 반복
+				*ngFor를 통한 반복
+				ex)
+					<ul>
+						<li *ngFor="let hero of heroes">
+							<span>{{ hero.id }}</span>{{ hero.name }}</span>
+						</li>
+					</ul>
+					
+		- (click) 이벤트
+			(click)="fnName()"
+			ex)
+				<li *ngFor="let hero of heroes" (click)="onSelect(hero)">
+		
+		- *ngIf 를 통한 동적인 뷰 visible * invisible
+			<div *ngIf="selectedHero">
+				** selectedHero 변수가 설정된다면 div를 visible하게 설정
+				
+		- [class.selected] 를 통해 클릭된 list를 동적으로 class를 추가하고 없앤다
+			[class.클래스명]="조건"
+			[class.selected]="hero === selectedHero"
+			
+			** table, ul 등에서 list를 보여주는 정보에서 강력하게 적용된다
+			<li
+				[class.selected]="hero === selectedHero"
+			> .. </li>
+			
+			[class.selected] 의 val인
+			"hero === selectedHero"
+			는 두가지 를 비교 후에 동일하다면 해당 li에 class selected를 추가하지만
+			동일하지 않다면 class.selected를 없앤다
+			
+		- @Input decorator를 통해 변수를 컴포넌트들 사이에 전달하기
+			부모(전달컴포넌트) ts
+				<자식-selector [자식에서 선언된 변수명]="전달대상"></자식-selector>
+			
+			자식(변수전달받는 컴포넌트) ts
+			import { Input, Component, OnInit } from '@angular/core';
+			
+			자식 html (template)
+			@Component( {
+				selector: .. 
+				styleUrls: ..
+				templateUrl: ...
+			});
+			class ChildComponent implements OnInit(컴포넌트 초기화시 이용) {
+				@Input() hero: Hero;
+			}
+			** @Input 데코레이터를 통해 부모 template에서 정의된 attribute,
+				<자식-selector [주입대상변수명]="전달대상변수명"></자식-selector>
+				
+		- service
+			1. cli
+				ng generate service new_service module="app"
+			2. component에서 import 후 사용
+				import { ..Service } from './...service';
+				constructor(private ..service: ..Service)
+				// 생성자 대용의 ngInit()
+				// 사용 이유는 관습적으로 constructor는 database와의 연동이 아니라
+				// 다양한 변수의 초기화에 맞춰져 있기 때문이다 (단지 관습 .. )
+				ngInit() {
+					// database와의 통신을 통해 데이터 읽어오기 (리스트 .. ?)
+				}
+			3. service에서 crud 작업 수행
+				Server <-> Service <-> Component
+			
+		- routing
+			ng generate module app-routing --flat --module=app
+				--flat
+					cli가 위치한 디렉토리 대신 디렉토리의 angular 프로젝트 root 폴더에
+					대상 파일을 생성하도록 한다
+				
+				--module=app
+					app.module.ts의 imports에 새로 생성한 module을 등록하게 한다
+			
+			
+			router-outlet
+				현재 router 상태에 대한 기본 값
+				
+			RouterModule
+				router와 관련된 module
+			
+			RouterModule.forRoot
+				routes를 등록
+			
+			** router 작업
+				app.module.ts
+					1. 필요 모듈을 import 한다
+						import { Routes, RouterModule } from '@angular/route';
+					
+					2. 경로 url을 설정한다
+						const appRoutes: Routes = [
+							{ path: '', component: AppComponent },
+							{ path: 'hero', component: HeroComponent }
+						];
+					
+					3. @NgModule 데코레이터를 통해 route가 정의된 appRout angular에게 전해줘서 url을 설정한다
+						@NgModule({
+							declations: [ .. ],
+							imports: [
+								RouterModule.forRoot(appRoutes)
+							],
+						})
+						export class AppModule { }
+					
+					4. template에 <router-outlet> 지시어를 입력해 페이지 부분을 ajax로 통신하게한다 (실제로는 SPAs)
+						<div class="body">
+							<div class="side-menu">
+								...
+							</div>
+							<div class="body">
+								<router-outlet></router-outlet>
+							</div>
+						</div>
+					
+					
+					
+				
+			** router directive
+				<router-outlet>
+					앵귤러 router 가 router-outlet이 위치한 곳에 route를 위치시킨다
+	
+		- Component decorator selector 
+			@Component({
+				selector: 'app-server'
+				혹은
+				selector: '[app-server]', (attribute로써 동작, <div app-server></div>)
+				혹은
+				selector: '.app-server', (class로써 동작 <div class="app-server"></div>
+			})
+			export class ServerComponent implements OnInit {
+				constructor() { .. }
+				ngOnInit() { .. }
+			}
+			
+	- Data Binding
+		목적
+			template과 ts간에 데이터 communication
+		방식
+			ts -> template
+				1.string interpolator (result in which placeholder replace with corresponding data)
+					데이터 placeholder를 지정함으로 데이터값을 특정 태그에 삽입
+					{{ string_interpolator }}
+						ex)
+							<td>{{name}}</td>
+				
+				2. property binding
+					특정 이벤트 핸들러
+					[property]="boolean"
+						ex)
+							[disabled]="!isServerStarted"
+				
+			template -> ts
+				1. Event Binding (event)="expression"
+					(event)="함수명"
+						ex)
+							(click)="onChange()"
+					
+					** (event)="함수명($event)"
+						$event
+							event binding 시에 발생된 DOM event의 객체의 기능과 유사하며 발생된 이벤트와 파생된 결과물을 담는 객체이다
+			
+	directives, 지시어
+		DOM 도구, angular에게 특정지점의 작업을 요구하는 것 자체를 directives라고 부른다
+		component selector, attribute selector 등 ..
+		
+		** ngIf와 else
+			ngIf의 조건이 true 라면 해당 element가 실행되며
+			false일 경우에는 ngIf의 else의 local_databinding의 ng-template
+			부분을 해당 부분에 위치시킨다
+			
+			<엘리먼트 *ngIf="boolean; else local_databinding">
+				...
+			</엘리먼트>
+			<ng-template #local_databinding>
+				ngIf의 조건이 false인 경우 실행되는 구문
+			</ng-template>
+		
+		
+		** structural directives (구조적 지시어)
+			directives 앞에 * 가 붙은 지시어
+			DOM 의 structure를 바꾼다는 의미에 * (스타)를 붙인다
+		
+		
+		
+		지시어 prefix
+			[]		property binding
+			() 		event binding
+			[()]	two-way binding
+			* 		structural directives (DOM document 구조를 변경한다)
+			#		local data binding
+			
+		
+		
