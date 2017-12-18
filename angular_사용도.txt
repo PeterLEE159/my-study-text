@@ -148,6 +148,46 @@
 			
 	
 4. Services & Dependancy Injection
+	목적
+		component는 직접적으로 데이터에 접근하는 것을 않하고 데이터를 보여주는 레이어이다.
+		component가 이 역할에 충실하고 mvc패턴을 지키기 위해서 사용되는 클래스이다
+	
+	사용법
+		1. @Injector 없이 동작 (provider가 객체주입의 역할을 맡으므로 @Injector를 대체한다)
+			custom.service.ts
+				class CustomService {
+					act() { .. }
+				}
+			
+			component.ts
+				@Component({
+					selector: 'app-custom',
+					templateUrl: 'custom.component.html',
+					styleUrls: ['customer.component.css'],
+					provider: [ CustomService ]
+				})
+				class CustomComponent implements OnInit {
+					// Dependancy Injection 주입
+					constructor(private customService: CustomService) { }
+					
+					click() {
+						this.customService.act();
+					}
+				}
+				
+		
+			
+		** Provider Injection 레벨 (트리구조)
+			AppModule
+				Application-Wide 로 제공된다, 즉 모든 app에 전부 제공된다
+				
+			AppComponent
+				AppComponent가 component 트리 최상위 component이다 따라서 모든 component는 child이므로 app.component의 provider가 모두 injection 된다
+				단 override는 가능하다
+			
+			ChildComponent
+				Child는 해당 child컴포넌트와 트리구조에서 child의 하위에 있는 component가 injected 받는다
+				
 5. Routing
 	URL만 바뀌면서 유저 입장에서는 페이지가 바뀌는 것처럼 보이지만 실제론 SPA
 6. Observables
