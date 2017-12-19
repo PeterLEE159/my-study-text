@@ -146,6 +146,8 @@
 			[attr_name]="string"
 			[attr_name]="{attr_value: boolean}"
 			
+		
+			
 	
 4. Services & Dependancy Injection
 	목적
@@ -190,6 +192,129 @@
 				
 5. Routing
 	URL만 바뀌면서 유저 입장에서는 페이지가 바뀌는 것처럼 보이지만 실제론 SPA
+	ex)
+		RouterModule을 이용해 Routes 객체를 url과 매핑
+		1. app.module.ts
+			import { Routes, RouterModule } from '@angular/router';
+			
+			const routes = [
+				{path: '', component: HomeComponent},
+				{path: 'users', component: UserComponent},
+				{path: 'servers', component: ServerComponent},
+			};
+			
+			@NgModule({
+				imports: [
+					RouterModule.forRoot(routes);
+				]
+			});
+		
+		2. app.component.html
+			<div class="row">
+				<router-outlet></router-outlet>  	// router-outlet 모듈에 routes 변수의 components 를 보여준다
+			</div>
+	
+	property binding을 통해 navigate 하기
+		** property binding
+			[routerLink]="url" 혹은					// routerLink를 property binding으로 해서 url string 방식으로 url을 전달
+			[routerLink]="['url']" 혹은				// routerlink를 property binding 하고 url을 array로 전달
+				** array를 통해서 각 어레이 값이 url path가 되고 어레이 순서대로 진행되며 사이에는 / 가 삽입된다
+					ex)
+						[routerLink]="['/users', 5, 'Anna']
+							=> url = localhost:4200/users/5/Anna
+
+			routerLink="url"						// routerlink를 일반 property로 하고 url을 전달
+			
+			// routerLink를 통해 연결된 a혹은 button의 value인 route값이 현재 지정된 url과 일치하면 className을 해당태그에 붙인다
+			// a 태그 및 button 태그에 직접적으로 삽입해도 되고 버튼을 감싸고 있는 태그에 삽입해도 된다
+			routerLinkActive="className"
+			
+			// routerLinkActive는 의 값은 단지 routerLink의 url에 속하는지 확인한다
+			// 따라서 routerLinkActive값이 현재 url의 일부값으로써 존재한다면 클래스값이 태그에 삽입된다
+			// 따라서 routerLinkActiveOptions의 값을 통해 설정값을 줘서 {exact: true} routerLinkActive의 조건을 보다 세밀조정한다
+			[routerLinkActiveOptions]="{exact: true}"
+			
+		** programmatically navigate
+			.ts 파일에서 url navigate 하기
+			ex)
+				1. custom.component.ts
+				
+				import { Router } from '@angular/router';
+				
+				export class CustomComponent {
+					constructor(private router: Router) { }
+					
+					// event binding을 통해 호출되는 함수
+					onLoadServer() {
+						this.router.navigate(['/newURL']);
+					}
+				}
+				
+				2. customer.component.html
+					<button (click)="onLoadServer">서버로드</button>
+					
+		** 동적인 url route 설정
+			route의 url path에 변수를 삽입해 url을 동적으로 받는다
+				ex)
+					app.module.ts
+						const routes: Routes = [
+							{path: 'users/:id', component: UserComponent}
+						];
+					
+					user.component.ts
+						import { ActivatedRoute } from '@angular/route';
+						
+						export class UserComponent {
+							user: {id: number, name: string};
+							constructor(private route: ActivatedRoute) { }
+							
+							ngOnInit() {
+								this.user.id = this.route.snapshot.params['id'];
+							}
+		
+		** 같은 component에서 url이 바뀔 경우에 component를 url 변수에 따라서 다시 설정하기 위해 필요한 작업
+			ex)
+				import { ActivatedRoute } from '@angular/router';
+				
+				class CustomComponent implements OnInit {
+					user: {id: number, name: string};
+					constructor(private route: ActivatedRoute } { }
+					
+					ngOnInit() {
+						// route.params 를 하면 Observable<Param> 이 return 되는데
+						// 이 객체를 통해 subscribe를 하면 url param이 바뀔 때 마다 trigger되어 작업해
+						// component에도 적용되도록 설정한다
+						route.params.subscribe( (param: Param) => {
+							this.user.id = param.id;
+							this.user.name = param.name;
+						});
+					}
+				}
+				
+		** queryParams와 fragment로 url 호출
+			1. tag를 통해 호출
+				ex)
+					<a 
+						[routerLink]="['/users', user.id, 'edit']'
+						[queryParams]="{allowEdit: 1, user_role: user.role}"
+						[fragment]="'loading'"
+					>로딩</a>
+			
+			2. programatically하게 ts에서 호출
+				ex)
+					
+					constructor(private route: ActivatedRoute) { }
+					
+					onUserUpdate() {
+						this.route.navigate(
+							['/users', this.user.id, 'edit'], 
+							{ 
+								queryParams: {allowEdit: 1},
+								fragment: 'loading'
+							},
+						);
+					}
+			
 6. Observables
 	asynchronized 비동기적인 코드 환경
 7. Forms
