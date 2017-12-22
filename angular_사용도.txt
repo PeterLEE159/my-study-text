@@ -314,6 +314,93 @@
 							},
 						);
 					}
+					
+		** nested routing (childrent 키값을 이용해 특정 Component안에 child compoenent 삽입
+			1. custom.module.ts
+				const routes: Routes = [
+					{path: 'users', UserComponent, children: [
+						{ path: 'edit', UserEditComponent }
+						{ path: 'create', UserCreateComponent }
+					]
+				]
+				
+			2. user.template.html
+				<h3>유저</h3>
+				<!-- path 조건에 따라서 UserEditComponent 가 적용될지 UserCreateComponent가 적용될지 결정됨
+				<!-- users/edit 일 경우 UserEditComponent, users/create일 경우 UserCreateComponent
+				<app-routing>
+				
+		** 페이지 이동을 할 때 이전의 queryParams 유지하기
+			프로그래밍 방법
+				
+				custom.component.ts
+					import { ActivatedRoute, Router } from '@angular/router';
+					
+					
+					class CustomComponent {
+						constructor(route: ActivatedRoute, router: Router) { }
+						
+						onUpdate() {
+							// [preserve]   현재 activated route 의 url의 queryParams 를 유지
+							this.router.navigate('update', { relativeTo: this.route, queryParamsHandling: 'preserve' });
+							
+							// [merge]   	현재 activated route url 의 queryParams와 새로 입력되는 url params의 정보를 합일
+							this.router.nativate('update', { relativeTo: this.route, queryParams: {'id', 3}, queryParamsHandling: 'merge'
+						}
+					}
+			
+		
+		** AuthGuard, AuthService를 이용해 유저접근을 막는 방법
+			ex)
+				auth-guard.service.ts
+				
+					import { AuthService } from './auth.service';
+					import { ActivateRouteSnapshot, RouteStateSnapshot, Router } from '@angular/router';
+					import { Observable } from 'rxjs';
+					
+					
+					export class AuthGuardService implements CanActivate {
+						constructor(private authService: AuthService, private router: Router) {
+							
+						}
+						
+						canActivate(route: ActivateRouteSnapshot, state: RouterStateSnapshot) :Observable<boolean> | Promise<boolean> {
+							return this.authService.isAuthenticated()
+								.then(
+									(authenticated: boolean) => {
+										if(authenticated) {
+											return true;
+										} else {
+											this.router.navigate(['/auth-fail']);
+											return false;
+										}
+									}
+								)
+						}
+					}
+					
+				auth.service.ts
+					
+					export class AuthService {
+						loggedIn = false;
+						
+						isAuthenticated() {
+							const promise = new Promise((resolve, reject) => {
+								setTimeout(() => {
+									resolve(this.loggedIn);
+								}, 800);
+							});
+							return promise;
+						}
+						
+						login() {
+							this.loggedIn = true;
+						}
+						
+						logout() {
+							this.loggedIn = false;
+						}
+					}
 			
 6. Observables
 	asynchronized 비동기적인 코드 환경
