@@ -7,4 +7,29 @@
 	- 이성적인 (독립적)
 		- 이성적 생각
 		- 이성적 행동
-	
+
+
+- 머신러닝
+	- 개발자가 직접 데이터를 넣어 if else if else if 등을 직접 삽입하는 방식
+
+- supervised leaning
+	- labeled example => training set
+	- 즉 데이터들을 통해 직접 배움
+	- ML에 있어서 가장 일반적인 방식
+	- ex)
+		- 이미지 label
+		- 이메일 스팸 필터 label
+		- 시험 점수결과 (공부시간에 따른 점수 결과 데이터를 토대로 판단)
+			- 범위가 넓다면 (0점 ~ 100점) -> regression
+	- 결과 종류
+		- regression
+			- 범위가 넓을 경우 (예: 0점 ~ 100점)
+		- binary classification
+			- true, false 를 구분할 때
+		- multi-label classification 
+			- 선택옵션이 정해진 A, B, C, D, F 등에서 선택할 경우
+
+- unsupervised leaning
+	- 정보들을 그룹화
+	- 단어 clustering
+	- unlabeled data

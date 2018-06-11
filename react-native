@@ -1,0 +1,17 @@
+- prop, state
+	- prop
+		- 정적인 데이터
+		- 부모 컴포넌트에서 자식 컴포넌트로 전달해주는 값
+		- 자식 컴포넌트에서 부모 컴포넌트로 값을 전달하고 싶을 때는
+		  prop에 부모 컴포넌트의 함수를 전달하고
+		  자식 컴포넌트에서 this 키워드를 쓸 때 부모 객체를 re-rendering하기 위해서 자바스크립트 Function의 bind를 활용
+
+	- state
+		- 동적인 데이터
+		- setState({ .. } 를 통해 뷰를 re-render 할 수 있다.
+
+- list
+	- list를 표현하기 위해서는 array object값을 jsx를 이용해 뷰 컴포넌트로 변환 map를 활용해도 좋지만 속도가 느림
+
+- redux library
+	- redux 를 활용하기 위해서는 react-redux npm의 도움이 필요하다.

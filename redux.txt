@@ -1,0 +1,57 @@
+- 동작방식
+	- 플로우
+		- action -> reducer -> state
+
+	- action
+		- 자바스크립트 오브젝트, 리듀서에 있는 데이터를 어떻게 조작할지 결정한다.
+
+	- reducer
+		- 데이터를 반환 시키는 함수
+
+	- state
+		- 실제로 사용할 데이터
+
+	- store
+		- 전체적인 관점에서 데이터를 보유
+
+- redux를 사용하는 이유
+	- 코드 양 최소화
+	- 코드 복잡도 최소화
+	- 다양한 기능 제공
+
+
+const action = {
+  type: 'split_string',
+  payload: 'asdf'
+};
+
+const reducer = (state = [], action) => {
+  if(action.type === 'split_string') {
+    return action.payload.split('');
+  } else if(action.type == 'add_char') {
+    return [ ...state, action.payload ];
+  }
+  return state;
+};
+
+const store = Redux.createStore(reducer);
+
+
+store.getState();
+
+
+store.dispatch(action);
+
+store.getState();
+
+
+
+const action2 = {
+  type: 'add_char',
+  payload: 'a'
+};
+
+
+store.dispatch(action2);
+
+store.getState();
