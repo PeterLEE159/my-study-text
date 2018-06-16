@@ -20,38 +20,47 @@
 	- 다양한 기능 제공
 
 
-const action = {
-  type: 'split_string',
-  payload: 'asdf'
-};
+- react-native에 적용
+	- Provider(from 'react-redux') 태그를 이용해 적용
 
-const reducer = (state = [], action) => {
-  if(action.type === 'split_string') {
-    return action.payload.split('');
-  } else if(action.type == 'add_char') {
-    return [ ...state, action.payload ];
-  }
-  return state;
-};
+		- import { Provider, connect } from 'react-redux';
+		- import { combineReducers } from 'redux';
+		- 
+		- 
+		const App = () => {
+			<Provider store={createStore(combineReducers({
+				reducerName1: reducerFn1,
+				reducerName2: reducerFn2,
+				... (그외 다른 reducers )
+			}))}>
+				<LibraryList />
+			</Provider>
+		}
+		
 
-const store = Redux.createStore(reducer);
+		  class LibraryList extends Component {
+		  	render() {
+		  		return <..>;
+		  	}
+
+		  	mapStateToProps(reducerState) {
+		  		return (
+		  			propData: reducerState.reducerName1
+		  		)
+		  	}
+
+		  	export connect(mapStateToProps)(LibraryList);
+		  }
+
+	- Provider 안에 태그들은 reducer에 접근 할 수 있게된다.
+
+	- class LibraryList extends Component {
+
+	}
 
 
-store.getState();
+- redux thunk
+	- action creator 를 async하게 return 함
+	- action이 dispatch로 배치됨을 이용해 redux thuck call back
+		함수에서 사용하도록 한다.
 
-
-store.dispatch(action);
-
-store.getState();
-
-
-
-const action2 = {
-  type: 'add_char',
-  payload: 'a'
-};
-
-
-store.dispatch(action2);
-
-store.getState();
