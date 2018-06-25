@@ -13,5 +13,72 @@
 - list
 	- list를 표현하기 위해서는 array object값을 jsx를 이용해 뷰 컴포넌트로 변환 map를 활용해도 좋지만 속도가 느림
 
-- redux library
-	- redux 를 활용하기 위해서는 react-redux npm의 도움이 필요하다.
+- libraries
+	- redux library
+		- redux 를 활용하기 위해서는 react-redux npm의 도움이 필요하다.
+
+	- redux-thunk
+		- redux-thuck을 이용해 action단에서 async한 작업을 처리할 수 있다.
+		- react-redux의 Provider태그에 넣는 store에 react-thunk를 삽입해 사용한다.
+
+		ex)
+		App.js
+
+			import { Provider } from 'react-redux';
+			import { createStore, applyMiddleware } from 'redux';
+			import { ReduxThunk } from 'redux-thunk';
+
+			const store =  createStore(reducers, {}, applyMiddleware(ReduxThunk))
+
+			<Provider store={store}>
+				..
+			</Provider>
+
+		Actions.js
+
+			const action = () => {
+				return {
+					type: ..
+					payload: ..
+				}
+			}
+			처럼 일반적인 obj 방식이 아니라 fn에 dispatch를 args로 넘겨서 처리한다.
+
+			즉
+
+			const action = () => {
+				return (dispatch) => {
+					dispatch({
+						type: ...
+						payload: ...
+					})
+				}
+			}
+
+
+	- react-native-router-flux
+		- component 단위 네비게이션
+		- component를 페이지로 처리한다.
+		- npm install react-native-router-flux@3.32.0
+
+		ex)
+		App.js
+			import { Router } from './Router';
+
+			<Provider>
+				<Router />
+			</Provider>
+
+		Router.js
+			import { Router, Scene } from 'react-native-router-flux';
+
+			export default const = () => {
+				<Router>
+					<Scene key='root'>
+						<Scene key='login' component={LoginForm}
+						initial />
+
+					</Scene>
+				</Router>
+			}
+
